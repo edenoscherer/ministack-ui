@@ -31,7 +31,7 @@ export class MiniStackProvider implements RuntimeProvider {
       'Fetching user profile data for ID 582910',
     ];
     const payloads = [
-      { userId: '582910', ip: '189.12.33.45', durationMs: 42 },
+      { userId: '582910', ip: '127.0.0.1', durationMs: 42 },
       { error: 'Connection timeout', host: 'redis-cache-01', port: 6379, retries: 3 },
       { invoiceId: '89283', amount: 249.9, currency: 'BRL', gateway: 'stripe' },
       { email: 'user@example.com', templateId: 'welcome-email', status: 'delivered' },

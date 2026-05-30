@@ -4,13 +4,13 @@ import type { LogMessage, LogLevel, ConnectionStatus } from '@ministack-ui/share
 import { JsonTree } from './JsonTree';
 
 export interface LogViewerProps {
-  logs?: LogMessage[];
-  isPaused?: boolean;
-  onPauseToggle?: () => void;
-  autoScroll?: boolean;
-  onAutoScrollToggle?: () => void;
-  onClear?: () => void;
-  connectionStatus?: ConnectionStatus;
+  readonly logs?: LogMessage[];
+  readonly isPaused?: boolean;
+  readonly onPauseToggle?: () => void;
+  readonly autoScroll?: boolean;
+  readonly onAutoScrollToggle?: () => void;
+  readonly onClear?: () => void;
+  readonly connectionStatus?: ConnectionStatus;
 }
 
 const levelStyles: Record<LogLevel, { text: string; bg: string; border: string }> = {
@@ -30,7 +30,7 @@ export function LogViewer({
   connectionStatus = 'DISCONNECTED',
 }: LogViewerProps): JSX.Element {
   const [searchText, setSearchText] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState<LogLevel | 'ALL'>('ALL');
+  const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
   const [selectedService, setSelectedService] = useState<string>('ALL');
   const [selectedLog, setSelectedLog] = useState<LogMessage | null>(null);
 
@@ -53,9 +53,7 @@ export function LogViewer({
 
     // Check if user has scrolled away from the bottom (within a threshold of 10px)
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
-    if (!isAtBottom && autoScroll) {
-      onAutoScrollToggle();
-    } else if (isAtBottom && !autoScroll) {
+    if (isAtBottom !== autoScroll) {
       onAutoScrollToggle();
     }
   };
@@ -125,9 +123,7 @@ export function LogViewer({
 
             <select
               value={selectedLevel}
-              onChange={(e) =>
-                setSelectedLevel((e.target as HTMLSelectElement).value as LogLevel | 'ALL')
-              }
+              onChange={(e) => setSelectedLevel((e.target as HTMLSelectElement).value)}
               className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer"
             >
               <option value="ALL">Todos os Níveis</option>
@@ -209,7 +205,15 @@ export function LogViewer({
                 <div
                   key={log.id}
                   onClick={() => setSelectedLog(isSelected ? null : log)}
-                  className={`flex items-start gap-3 py-1 px-2 rounded-md transition-colors cursor-pointer group ${
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedLog(isSelected ? null : log);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className={`flex items-start gap-3 py-1 px-2 rounded-md transition-colors cursor-pointer group focus:outline-none focus:ring-1 focus:ring-zinc-700/50 ${
                     isSelected ? 'bg-zinc-800 text-white' : 'hover:bg-zinc-900/60 text-zinc-300'
                   }`}
                 >

@@ -152,7 +152,7 @@ function InteractiveStreamingWrapper() {
         setLogs((prev) => {
           const combined = [...prev, newLog];
           if (combined.length > 1000) {
-            return combined.slice(combined.length - 1000);
+            return combined.slice(-1000);
           }
           return combined;
         });
@@ -168,7 +168,7 @@ function InteractiveStreamingWrapper() {
         const combined = [...prev, ...pendingLogsRef.current];
         pendingLogsRef.current = [];
         if (combined.length > 1000) {
-          return combined.slice(combined.length - 1000);
+          return combined.slice(-1000);
         }
         return combined;
       });

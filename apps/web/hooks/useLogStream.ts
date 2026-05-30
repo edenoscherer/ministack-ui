@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useLogStore } from '../store/useLogStore';
 
 export function useLogStream(provider: 'ministack' | 'localstack' = 'ministack') {
@@ -9,49 +9,48 @@ export function useLogStream(provider: 'ministack' | 'localstack' = 'ministack')
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
+  const connect = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    setConnectionStatus('CONNECTING');
+
+    const url = `/api/logs/stream?provider=${provider}`;
+    const es = new EventSource(url);
+    eventSourceRef.current = es;
+
+    es.onopen = () => {
+      setConnectionStatus('CONNECTED');
+    };
+
+    es.onmessage = (event) => {
+      try {
+        if (!event.data) return;
+        const parsedLog = JSON.parse(event.data);
+        addLog(parsedLog);
+      } catch (error) {
+        console.error('Error parsing SSE log message:', error);
+      }
+    };
+
+    es.onerror = () => {
+      setConnectionStatus('DISCONNECTED');
+      es.close();
+
+      // Schedule resilient automatic reconnection in 3 seconds
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connect();
+      }, 3000);
+    };
+  }, [provider, addLog, setConnectionStatus]);
+
   useEffect(() => {
     // Clear display buffer when switching provider to keep lists clean
     clearLogs();
-
-    function connect() {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-
-      setConnectionStatus('CONNECTING');
-
-      const url = `/api/logs/stream?provider=${provider}`;
-      const es = new EventSource(url);
-      eventSourceRef.current = es;
-
-      es.onopen = () => {
-        setConnectionStatus('CONNECTED');
-      };
-
-      es.onmessage = (event) => {
-        try {
-          if (!event.data) return;
-          const parsedLog = JSON.parse(event.data);
-          addLog(parsedLog);
-        } catch (error) {
-          console.error('Error parsing SSE log message:', error);
-        }
-      };
-
-      es.onerror = () => {
-        setConnectionStatus('DISCONNECTED');
-        es.close();
-
-        // Schedule resilient automatic reconnection in 3 seconds
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current);
-        }
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, 3000);
-      };
-    }
-
     connect();
 
     return () => {
@@ -63,7 +62,7 @@ export function useLogStream(provider: 'ministack' | 'localstack' = 'ministack')
       }
       setConnectionStatus('DISCONNECTED');
     };
-  }, [provider, addLog, setConnectionStatus, clearLogs]);
+  }, [connect, clearLogs, setConnectionStatus]);
 
   // Return reactive states and callbacks to be bound directly in LogViewer
   return {

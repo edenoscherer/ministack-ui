@@ -1,70 +1,75 @@
 import type { LogMessage, LogLevel } from '@ministack-ui/shared';
 
 // Matches: 2026-05-30T13:00:00.000Z [INFO] service-name: Message text { "payload": "json" }
+// Case-sensitive exact regex to reduce backtracking complexity and avoid duplicate class alerts
 const RAW_LOG_REGEX =
-  /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[(INFO|WARN|ERROR|DEBUG)\]\s+([a-zA-Z0-9_-]+):\s+(.*?)(?:\s+(\{.*\}))?$/i;
+  /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[(INFO|WARN|ERROR|DEBUG|info|warn|error|debug)\]\s+([a-zA-Z0-9_-]+):\s+(.*?)(?:\s+(\{.*\}))?$/;
 
-export function parseLog(raw: string): LogMessage {
-  const trimmed = raw.trim();
-
-  // Case 1: Pure JSON Log
-  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
-    try {
-      const parsed = JSON.parse(trimmed);
-
-      const id = parsed.id || `log-${Math.random().toString(36).substring(2, 11)}`;
-      const timestamp = parsed.timestamp || new Date().toISOString();
-      const level = (parsed.level || 'INFO').toUpperCase() as LogLevel;
-      const service = parsed.service || 'unknown';
-      const message = parsed.message || trimmed;
-
-      // Filter out mapped fields to form the remaining payload
-      const { id: _id, timestamp: _t, level: _l, service: _s, message: _m, ...payload } = parsed;
-
-      return {
-        id,
-        timestamp,
-        level,
-        service,
-        message,
-        payload: Object.keys(payload).length > 0 ? payload : undefined,
-      };
-    } catch (e) {
-      // Fall through to regex parser
-    }
+function parseJsonLog(trimmed: string): LogMessage | null {
+  if (!(trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+    return null;
   }
+  try {
+    const parsed = JSON.parse(trimmed);
 
-  // Case 2: Structured Plain Text log via Regex
-  const match = trimmed.match(RAW_LOG_REGEX);
-  if (match) {
-    const timestamp = match[1] || new Date().toISOString();
-    const levelStr = match[2] || 'INFO';
-    const service = match[3] || 'unknown';
-    const message = match[4] || '';
-    const rawPayload = match[5];
+    const id = parsed.id || `log-${Math.random().toString(36).substring(2, 11)}`;
+    const timestamp = parsed.timestamp || new Date().toISOString();
+    const level = (parsed.level || 'INFO').toUpperCase() as LogLevel;
+    const service = parsed.service || 'unknown';
+    const message = parsed.message || trimmed;
 
-    const level = levelStr.toUpperCase() as LogLevel;
-
-    let payload: Record<string, any> | undefined = undefined;
-    if (rawPayload) {
-      try {
-        payload = JSON.parse(rawPayload);
-      } catch (e) {
-        // Ignore malformed payload json
-      }
-    }
+    // Filter out mapped fields to form the remaining payload
+    const { id: _id, timestamp: _t, level: _l, service: _s, message: _m, ...payload } = parsed;
 
     return {
-      id: `log-${Math.random().toString(36).substring(2, 11)}`,
+      id,
       timestamp,
       level,
       service,
       message,
-      payload,
+      payload: Object.keys(payload).length > 0 ? payload : undefined,
     };
+  } catch (e) {
+    // Return null on failure to allow falling back to regex parser
+    return null;
+  }
+}
+
+function parseRegexLog(trimmed: string): LogMessage | null {
+  const match = RAW_LOG_REGEX.exec(trimmed);
+  if (!match) {
+    return null;
   }
 
-  // Case 3: Flat simple fallback text
+  const timestamp = match[1] || new Date().toISOString();
+  const levelStr = match[2] || 'INFO';
+  const service = match[3] || 'unknown';
+  const message = match[4] || '';
+  const rawPayload = match[5];
+
+  const level = levelStr.toUpperCase() as LogLevel;
+
+  let payload: Record<string, any> | undefined = undefined;
+  if (rawPayload) {
+    try {
+      payload = JSON.parse(rawPayload);
+    } catch (e) {
+      // Return payload as undefined if payload is malformed JSON
+      payload = undefined;
+    }
+  }
+
+  return {
+    id: `log-${Math.random().toString(36).substring(2, 11)}`,
+    timestamp,
+    level,
+    service,
+    message,
+    payload,
+  };
+}
+
+function parseFallbackLog(trimmed: string): LogMessage {
   let level: LogLevel = 'INFO';
   if (/error/i.test(trimmed)) level = 'ERROR';
   else if (/warn/i.test(trimmed)) level = 'WARN';
@@ -73,7 +78,7 @@ export function parseLog(raw: string): LogMessage {
   let timestamp = new Date().toISOString();
   let message = trimmed;
 
-  const dateMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s*(.*)/i);
+  const dateMatch = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s*(.*)/.exec(trimmed);
   if (dateMatch) {
     try {
       const matchedDate = dateMatch[1];
@@ -81,8 +86,9 @@ export function parseLog(raw: string): LogMessage {
         timestamp = new Date(matchedDate).toISOString();
         message = dateMatch[2] || trimmed;
       }
-    } catch {
-      // Ignore date parsing failure
+    } catch (e) {
+      // Keep initial timestamp if date parsing throws error
+      timestamp = new Date().toISOString();
     }
   }
 
@@ -93,6 +99,18 @@ export function parseLog(raw: string): LogMessage {
     service: 'system',
     message,
   };
+}
+
+export function parseLog(raw: string): LogMessage {
+  const trimmed = raw.trim();
+
+  const jsonLog = parseJsonLog(trimmed);
+  if (jsonLog) return jsonLog;
+
+  const regexLog = parseRegexLog(trimmed);
+  if (regexLog) return regexLog;
+
+  return parseFallbackLog(trimmed);
 }
 
 export function correlateLog(entry: string, correlationId: string): string {

@@ -34,7 +34,7 @@ export const MediumPayload: Story = {
         status: 'completed',
         gateway: 'stripe',
         metadata: {
-          ipAddress: '177.33.22.11',
+          ipAddress: '127.0.0.1',
           device: 'Mobile - iOS',
           attempts: 1,
         },
@@ -89,7 +89,7 @@ export const LargePayload: Story = {
           status: 'healthy',
           metrics: {
             cpu: 2.1,
-            memoryMb: 88.0,
+            memoryMb: 88,
             connections: 12,
           },
         },

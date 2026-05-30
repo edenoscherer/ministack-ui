@@ -26,7 +26,7 @@ test('Log Parser Engine', async (t) => {
 
   await t.test('should parse a structured flat text log with regex', () => {
     const raw =
-      '2026-05-30T10:00:00.000Z [WARN] auth-service: Login limit reached {"ip":"192.168.1.1"}';
+      '2026-05-30T10:00:00.000Z [WARN] auth-service: Login limit reached {"ip":"127.0.0.1"}';
     const result = parseLog(raw);
 
     assert.ok(result.id.startsWith('log-'));
@@ -34,7 +34,7 @@ test('Log Parser Engine', async (t) => {
     assert.strictEqual(result.level, 'WARN');
     assert.strictEqual(result.service, 'auth-service');
     assert.strictEqual(result.message, 'Login limit reached');
-    assert.deepStrictEqual(result.payload, { ip: '192.168.1.1' });
+    assert.deepStrictEqual(result.payload, { ip: '127.0.0.1' });
   });
 
   await t.test('should fallback to plain text parser when log format is raw', () => {
