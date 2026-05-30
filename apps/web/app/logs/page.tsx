@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { LogViewer } from '@ministack-ui/ui';
 import { useLogStream } from '../../hooks/useLogStream';
 import { useLogStore } from '../../store/useLogStore';
 
 export default function LogsPage() {
+  const searchParams = useSearchParams();
   const [provider, setProvider] = useState<'ministack' | 'localstack'>('ministack');
 
   const { logs, isPaused, togglePause, autoScroll, toggleAutoScroll, clearLogs, connectionStatus } =
@@ -21,6 +23,14 @@ export default function LogsPage() {
   const setSelectedLogStream = useLogStore((s) => s.setSelectedLogStream);
   const isLoadingMetadata = useLogStore((s) => s.isLoadingMetadata);
   const setIsLoadingMetadata = useLogStore((s) => s.setIsLoadingMetadata);
+
+  // Pre-select log group from ?logGroup= query param (e.g. deep-linked from CloudWatch Logs page)
+  useEffect(() => {
+    const logGroupParam = searchParams.get('logGroup');
+    if (logGroupParam) {
+      setSelectedLogGroup(logGroupParam);
+    }
+  }, [searchParams, setSelectedLogGroup]);
 
   // Reset selectors when switching providers
   useEffect(() => {

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ScrollText, Search, Bell, Box, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, ScrollText, Search, Bell, Box, ChevronDown, List } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 interface Props {
@@ -21,6 +21,7 @@ export function AppShell({
   const items = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/logs', label: 'Realtime Logs', icon: ScrollText },
+    { to: '/cloudwatch/logs', label: 'CloudWatch Logs', icon: List },
   ];
 
   return (

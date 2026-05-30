@@ -1,5 +1,32 @@
-import type { RuntimeProvider } from '../types';
+import type { RuntimeProvider, LogGroupMetadata } from '../types';
 import { streamMockLogs } from './mockHelper';
+
+let miniStackLogGroupsStore: LogGroupMetadata[] = [
+  {
+    name: '/demo-app/api',
+    retentionDays: null,
+    storedBytes: 7163136,
+    createdAt: '2026-01-15T00:00:00Z',
+  },
+  {
+    name: '/ecs/demo-api',
+    retentionDays: null,
+    storedBytes: 1829918,
+    createdAt: '2026-02-10T00:00:00Z',
+  },
+  {
+    name: '/ecs/demo-worker',
+    retentionDays: null,
+    storedBytes: 1159495,
+    createdAt: '2026-02-10T00:00:00Z',
+  },
+  {
+    name: '/infra/ministack',
+    retentionDays: null,
+    storedBytes: 0,
+    createdAt: '2026-03-01T00:00:00Z',
+  },
+];
 
 export class MiniStackProvider implements RuntimeProvider {
   async logs(): Promise<void> {
@@ -38,6 +65,25 @@ export class MiniStackProvider implements RuntimeProvider {
       '/aws/apigateway/ministack-api': ['api-stage-prod-stream'],
     };
     return groups[logGroup] || [];
+  }
+
+  async getLogGroupsWithMetadata(): Promise<LogGroupMetadata[]> {
+    return [...miniStackLogGroupsStore];
+  }
+
+  async createLogGroup(name: string, retentionDays?: number | null): Promise<LogGroupMetadata> {
+    const group: LogGroupMetadata = {
+      name,
+      retentionDays: retentionDays ?? null,
+      storedBytes: 0,
+      createdAt: new Date().toISOString(),
+    };
+    miniStackLogGroupsStore = [...miniStackLogGroupsStore, group];
+    return group;
+  }
+
+  async deleteLogGroup(name: string): Promise<void> {
+    miniStackLogGroupsStore = miniStackLogGroupsStore.filter((g) => g.name !== name);
   }
 
   async streamLogs(
