@@ -1,0 +1,36 @@
+{
+  "name": "@ministack-ui/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ministack-ui/event-engine": "workspace:*",
+    "@ministack-ui/log-engine": "workspace:*",
+    "@ministack-ui/runtime-sdk": "workspace:*",
+    "@ministack-ui/shared": "workspace:*",
+    "@ministack-ui/ui": "workspace:*",
+    "@tanstack/react-query": "^5.65.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
+    "next": "^15.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@ministack-ui/eslint-config": "workspace:*",
+    "eslint-config-next": "^15.1.4",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.18.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}

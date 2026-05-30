@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@ministack-ui/ui": ["../../packages/ui/src/index.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

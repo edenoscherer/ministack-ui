@@ -1,0 +1,18 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+overrides:
+  '@types/react': '^19.0.0'
+  '@types/react-dom': '^19.0.0'
+
+allowBuilds:
+  core-js-pure: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true
+
+onlyBuiltDependencies:
+  - core-js-pure
+  - esbuild
+  - sharp
