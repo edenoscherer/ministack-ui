@@ -12,3 +12,9 @@ export type { EventTimelineProps, TimelineEvent } from './components/EventTimeli
 
 export { QueueCard } from './components/QueueCard';
 export type { QueueCardProps } from './components/QueueCard';
+
+export { MiniLineChart } from './components/MiniLineChart';
+export { StatusBadge } from './components/StatusBadge';
+export type { ServiceStatus } from './components/StatusBadge';
+export { ServiceIcon } from './components/ServiceIcon';
+export type { ServiceType } from './components/ServiceIcon';
