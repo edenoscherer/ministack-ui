@@ -1,9 +1,5 @@
 import type { LogMessage, LogLevel } from '@ministack-ui/shared';
 
-// Matches: 2026-05-30T13:00:00.000Z [INFO] service-name: Message text { "payload": "json" }
-// Split into ultra-simple expressions to eliminate backtracking and lower complexity below 5
-const RAW_LOG_REGEX = /^(\S+)\s+\[([a-zA-Z]+)\]\s+([a-zA-Z0-9_-]+):\s+(.*)$/;
-
 function parseJsonLog(trimmed: string): LogMessage | null {
   if (!(trimmed.startsWith('{') && trimmed.endsWith('}'))) {
     return null;
@@ -35,17 +31,41 @@ function parseJsonLog(trimmed: string): LogMessage | null {
   }
 }
 
-function parseRegexLog(trimmed: string): LogMessage | null {
-  const match = RAW_LOG_REGEX.exec(trimmed);
-  if (!match) {
+// Programmatic structured parsing without regular expressions to solve all ReDoS vulnerabilities
+function parseStructuredLog(trimmed: string): LogMessage | null {
+  const firstSpaceIndex = trimmed.indexOf(' ');
+  if (firstSpaceIndex === -1) {
     return null;
   }
 
-  const timestamp = match[1] || new Date().toISOString();
-  const levelStr = match[2] || 'INFO';
-  const service = match[3] || 'unknown';
-  const rawMessage = match[4] || '';
+  const timestamp = trimmed.substring(0, firstSpaceIndex);
 
+  // The next character after space(s) must be '[' for the severity group
+  const restAfterTimestamp = trimmed.substring(firstSpaceIndex).trimStart();
+  if (!restAfterTimestamp.startsWith('[')) {
+    return null;
+  }
+
+  const closingBracketIndex = restAfterTimestamp.indexOf(']');
+  if (closingBracketIndex === -1) {
+    return null;
+  }
+
+  const levelStr = restAfterTimestamp.substring(1, closingBracketIndex);
+
+  const restAfterLevel = restAfterTimestamp.substring(closingBracketIndex + 1).trimStart();
+  const colonIndex = restAfterLevel.indexOf(':');
+  if (colonIndex === -1) {
+    return null;
+  }
+
+  const service = restAfterLevel.substring(0, colonIndex).trim();
+  // Service name must be a single word matching standard syntax [a-zA-Z0-9_-]
+  if (service.length === 0 || /[^a-zA-Z0-9_-]/.test(service)) {
+    return null;
+  }
+
+  const rawMessage = restAfterLevel.substring(colonIndex + 1).trimStart();
   const level = levelStr.toUpperCase() as LogLevel;
 
   let message = rawMessage;
@@ -128,8 +148,8 @@ export function parseLog(raw: string): LogMessage {
   const jsonLog = parseJsonLog(trimmed);
   if (jsonLog) return jsonLog;
 
-  const regexLog = parseRegexLog(trimmed);
-  if (regexLog) return regexLog;
+  const structuredLog = parseStructuredLog(trimmed);
+  if (structuredLog) return structuredLog;
 
   return parseFallbackLog(trimmed);
 }
