@@ -3,7 +3,6 @@ import type { LogMessage, LogLevel } from '@ministack-ui/shared';
 // Matches: 2026-05-30T13:00:00.000Z [INFO] service-name: Message text { "payload": "json" }
 // Split into ultra-simple expressions to eliminate backtracking and lower complexity below 5
 const RAW_LOG_REGEX = /^(\S+)\s+\[([a-zA-Z]+)\]\s+([a-zA-Z0-9_-]+):\s+(.*)$/;
-const PAYLOAD_REGEX = /\s+(\{.*\})$/;
 
 function parseJsonLog(trimmed: string): LogMessage | null {
   if (!(trimmed.startsWith('{') && trimmed.endsWith('}'))) {
@@ -52,19 +51,20 @@ function parseRegexLog(trimmed: string): LogMessage | null {
   let message = rawMessage;
   let payload: Record<string, any> | undefined = undefined;
 
-  // Extract payload JSON from the end of the message if present
-  const payloadMatch = PAYLOAD_REGEX.exec(rawMessage);
-  if (payloadMatch) {
-    try {
-      const rawPayload = payloadMatch[1];
-      if (rawPayload) {
-        payload = JSON.parse(rawPayload);
-        // Remove payload block from the parsed log message text
-        message = rawMessage.substring(0, rawMessage.length - payloadMatch[0].length);
+  // ReDoS Protection: extract trailing JSON payload linearly without regular expressions
+  if (rawMessage.endsWith('}')) {
+    const lastBraceIndex = rawMessage.lastIndexOf('{');
+    if (lastBraceIndex !== -1 && lastBraceIndex < rawMessage.length - 1) {
+      const candidatePayload = rawMessage.substring(lastBraceIndex);
+      try {
+        payload = JSON.parse(candidatePayload);
+        // Remove the payload JSON block and trailing spaces from the parsed log message text
+        message = rawMessage.substring(0, lastBraceIndex).trimEnd();
+      } catch (e) {
+        // Fall back to keeping payload as undefined if parsing throws
+        console.debug('Failed to parse linear JSON payload candidate:', e);
+        payload = undefined;
       }
-    } catch (e) {
-      console.debug('Failed to parse regex payload JSON:', e);
-      payload = undefined;
     }
   }
 
@@ -112,6 +112,17 @@ function parseFallbackLog(trimmed: string): LogMessage {
 }
 
 export function parseLog(raw: string): LogMessage {
+  // Defensive security limit on input string length to prevent ReDoS and out-of-memory exploits
+  if (!raw || raw.length > 20000) {
+    return {
+      id: `log-${Math.random().toString(36).substring(2, 11)}`,
+      timestamp: new Date().toISOString(),
+      level: 'ERROR',
+      service: 'system',
+      message: raw ? `${raw.substring(0, 1000)}... [Truncated due to size limit for security]` : '',
+    };
+  }
+
   const trimmed = raw.trim();
 
   const jsonLog = parseJsonLog(trimmed);

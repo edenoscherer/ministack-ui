@@ -56,4 +56,28 @@ test('Log Parser Engine', async (t) => {
     assert.strictEqual(result.service, 'system');
     assert.strictEqual(result.message, '{ invalid-json-here');
   });
+
+  await t.test(
+    'should defensively truncate extremely long log inputs to protect against ReDoS and memory overflow',
+    () => {
+      const rawHuge = 'A'.repeat(25000);
+      const result = parseLog(rawHuge);
+
+      assert.strictEqual(result.level, 'ERROR');
+      assert.strictEqual(result.service, 'system');
+      assert.ok(result.message.includes('[Truncated due to size limit for security]'));
+      assert.strictEqual(result.message.length, 1046); // 1000 + length of suffix
+    },
+  );
+
+  await t.test(
+    'should extract linear JSON payload safely even when message ends with non-payload curly braces',
+    () => {
+      const rawNoJson = '2026-05-30T10:00:00.000Z [INFO] main: Message with a non-json {block}';
+      const result = parseLog(rawNoJson);
+
+      assert.strictEqual(result.message, 'Message with a non-json {block}');
+      assert.strictEqual(result.payload, undefined);
+    },
+  );
 });
