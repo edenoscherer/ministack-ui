@@ -1,0 +1,63 @@
+schema: spec-driven
+
+# Contexto global do projeto (usado por IAs do OpenSpec)
+context: |
+  Você está trabalhando no projeto MiniStack UI. O MiniStack UI é uma plataforma open-source e self-hosted focada em observabilidade local, debugging distribuído, inspeção de runtime em tempo real e uma excelente experiência de desenvolvimento (Developer Experience).
+  Ela é 100% compatível com MiniStack, LocalStack e com suporte futuro para ambientes reais da AWS.
+
+  # Tecnologias & Stack Oficial
+  - Monorepo: Turborepo
+  - Package Manager: pnpm com workspaces
+  - Frontend: Next.js 15 (com Tailwind CSS + shadcn/ui)
+  - Estado: TanStack Query + Zustand
+  - Backend/API: Next.js Route Handlers
+  - Runtime SDK: AWS SDK v3
+  - Realtime: SSE (Server-Sent Events)
+  - Componentes de UI isolados: Storybook
+  - SDD: OpenSpec
+  - Arquitetura: ADR
+  - Documentação: Nextra
+  - Qualidade: ESLint + Prettier + Husky + TypeScript strict + Conventional Commits
+
+  # Filosofia de UI/UX
+  - NÃO crie clones do console da AWS, CRUDs genéricos ou painéis administrativos simples.
+  - Crie um "Runtime Inspector", focado em fluxos reais de desenvolvimento local.
+  - UX focada em workflow: Logs -> Eventos -> Debugging (Correlation-first).
+  - Navegação rasa: Máximo de 2 níveis de profundidade de navegação.
+  - Busca global abrangente (tudo deve ser pesquisável).
+  - Streaming-first: Visualizações sempre atualizadas em tempo real via SSE (sem recarregamentos manuais).
+
+  # Regras Gerais de Engenharia & Qualidade
+  - Nenhuma funcionalidade de produto deve ser implementada sem uma SPEC, contratos claros e critérios de aceite definidos no OpenSpec.
+  - É proibido utilizar o AWS SDK diretamente no código do frontend (o frontend deve interagir apenas com os Route Handlers do Next.js).
+  - Não coloque lógica de runtime (por exemplo, chamadas ou tratamentos específicos de providers) dentro de componentes visuais do frontend.
+  - Todo componente de UI crítico exportado deve obrigatoriamente possuir uma Story no Storybook (`Button`, `LogViewer`, `JsonTree`, `EventTimeline`, `QueueCard`).
+  - Todo código deve respeitar regras estritas de tipagem do TypeScript (`strict: true`), lints e formatação automática.
+
+  # Especificações Já Criadas (Arquivadas/Ativas)
+  - monorepo-workspace: Configuração inicial da raiz do monorepo (pnpm-workspace.yaml, Turborepo turbo.json, tsconfig.base.json, Husky e tooling de qualidade).
+  - app-web: Scaffold da aplicação Next.js 15 principal com rotas, providers de estado e estrutura limpa de pastas.
+  - app-storybook: Scaffold do Storybook 8 para desenvolvimento isolado dos componentes visuais com suporte a Tailwind.
+  - app-docs: Scaffold da plataforma de documentação pública utilizando Nextra v2.
+  - pkg-ui: Pacote central de componentes React reutilizáveis do design system (Button, LogViewer, JsonTree, EventTimeline, QueueCard).
+  - pkg-runtime-sdk: SDK de abstração para múltiplos provedores de runtime (MiniStack, LocalStack e AWS) utilizando interface `RuntimeProvider`.
+  - pkg-log-engine: Mecanismo central para processamento, parsing, correlação, filtragem e formatação de logs.
+  - pkg-event-engine: Mecanismo de rastreamento de eventos distribuídos, replay, timeline e links de payload.
+  - pkg-shared: Tipos, constantes globais e utilitários compartilhados entre todos os workspaces.
+  - pkg-eslint-config: Configurações unificadas de ESLint e Prettier estendidas por todos os projetos.
+  - dev-tooling: Configurações globais de TypeScript strict, Husky pre-commit/commit-msg, commitlint convencional e versionamento de Node.
+
+# Regras e restrições por tipo de artefato
+rules:
+  proposal:
+    - Mantenha as propostas objetivas e sempre inclua a justificativa técnica (Why) e o impacto nos workspaces afetados.
+    - Sempre adicione uma seção "Fora do Escopo" (Non-goals) para delimitar o que não será feito.
+  design:
+    - Detalhe as decisões arquiteturais (Decisions) com suas justificativas (Rationale) e alternativas consideradas.
+    - Liste os riscos técnicos identificados e suas respectivas ações de mitigação.
+  specs:
+    - Cada especificação deve ser escrita utilizando o padrão Gherkin/BDD (Given/When/Then, SHALL/SHOULD).
+    - Descreva os requisitos funcionais em formato de cenários de aceitação detalhados.
+  tasks:
+    - Quebre as tarefas em atividades granulares, sequenciais e fáceis de validar de forma independente.
+    - Agrupe as tarefas por componente ou workspace envolvido no monorepo.
