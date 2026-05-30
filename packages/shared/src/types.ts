@@ -10,3 +10,16 @@ export type PaginatedResponse<T> = ApiResponse<{
 }>;
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'unavailable';
+
+export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
+
+export interface LogMessage {
+  id: string;
+  timestamp: string;
+  level: LogLevel;
+  service: string;
+  message: string;
+  payload?: Record<string, any>;
+}
+
+export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED';
