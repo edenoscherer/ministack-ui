@@ -2,6 +2,9 @@
   "name": "@ministack-ui/ui",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "exports": {
     ".": "./src/index.ts"
   },
