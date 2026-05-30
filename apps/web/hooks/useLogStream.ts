@@ -5,6 +5,8 @@ export function useLogStream(provider: 'ministack' | 'localstack' = 'ministack')
   const addLog = useLogStore((s) => s.addLog);
   const setConnectionStatus = useLogStore((s) => s.setConnectionStatus);
   const clearLogs = useLogStore((s) => s.clearLogs);
+  const selectedLogGroup = useLogStore((s) => s.selectedLogGroup);
+  const selectedLogStream = useLogStore((s) => s.selectedLogStream);
 
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -16,7 +18,14 @@ export function useLogStream(provider: 'ministack' | 'localstack' = 'ministack')
 
     setConnectionStatus('CONNECTING');
 
-    const url = `/api/logs/stream?provider=${provider}`;
+    let url = `/api/logs/stream?provider=${provider}`;
+    if (selectedLogGroup && selectedLogGroup !== 'ALL') {
+      url += `&logGroup=${encodeURIComponent(selectedLogGroup)}`;
+    }
+    if (selectedLogStream && selectedLogStream !== 'ALL') {
+      url += `&logStream=${encodeURIComponent(selectedLogStream)}`;
+    }
+
     const es = new EventSource(url);
     eventSourceRef.current = es;
 
@@ -46,10 +55,10 @@ export function useLogStream(provider: 'ministack' | 'localstack' = 'ministack')
         connect();
       }, 3000);
     };
-  }, [provider, addLog, setConnectionStatus]);
+  }, [provider, addLog, setConnectionStatus, selectedLogGroup, selectedLogStream]);
 
   useEffect(() => {
-    // Clear display buffer when switching provider to keep lists clean
+    // Clear display buffer when switching provider or stream to keep lists clean
     clearLogs();
     connect();
 

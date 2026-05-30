@@ -43,9 +43,20 @@ function parseJsonLog(trimmed: string): LogMessage | null {
     const level = (parsed.level || 'INFO').toUpperCase() as LogLevel;
     const service = parsed.service || 'unknown';
     const message = parsed.message || trimmed;
+    const logGroup = parsed.logGroup;
+    const logStream = parsed.logStream;
 
     // Filter out mapped fields to form the remaining payload
-    const { id: _id, timestamp: _t, level: _l, service: _s, message: _m, ...payload } = parsed;
+    const {
+      id: _id,
+      timestamp: _t,
+      level: _l,
+      service: _s,
+      message: _m,
+      logGroup: _lg,
+      logStream: _ls,
+      ...payload
+    } = parsed;
 
     return {
       id,
@@ -53,6 +64,8 @@ function parseJsonLog(trimmed: string): LogMessage | null {
       level,
       service,
       message,
+      logGroup,
+      logStream,
       payload: Object.keys(payload).length > 0 ? payload : undefined,
     };
   } catch (e) {

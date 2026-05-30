@@ -5,6 +5,8 @@ import { parseLog } from '@ministack-ui/log-engine';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const providerParam = searchParams.get('provider') || 'ministack';
+  const logGroup = searchParams.get('logGroup') || undefined;
+  const logStream = searchParams.get('logStream') || undefined;
 
   // Select the appropriate provider based on parameter
   const provider =
@@ -22,12 +24,15 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(':connected\n\n'));
 
         // Subscribe to log stream from runtime-sdk
-        unsubscribe = await provider.streamLogs((rawLog: string) => {
-          // Parse the raw log line into a structured LogMessage
-          const parsedLog = parseLog(rawLog);
-          const sseMessage = `data: ${JSON.stringify(parsedLog)}\n\n`;
-          controller.enqueue(encoder.encode(sseMessage));
-        });
+        unsubscribe = await provider.streamLogs(
+          (rawLog: string) => {
+            // Parse the raw log line into a structured LogMessage
+            const parsedLog = parseLog(rawLog);
+            const sseMessage = `data: ${JSON.stringify(parsedLog)}\n\n`;
+            controller.enqueue(encoder.encode(sseMessage));
+          },
+          { logGroup, logStream },
+        );
 
         // Periodic heartbeat keep-alive every 15 seconds
         heartbeatInterval = setInterval(() => {

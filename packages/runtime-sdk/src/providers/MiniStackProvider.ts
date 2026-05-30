@@ -32,8 +32,35 @@ export class MiniStackProvider implements RuntimeProvider {
     throw new Error('not implemented');
   }
 
-  async streamLogs(onLog: (log: string) => void): Promise<() => void> {
-    const services = ['auth-service', 'payment-service', 'notification-service', 'user-service'];
+  async getLogGroups(): Promise<string[]> {
+    return [
+      '/aws/lambda/auth-function',
+      '/aws/lambda/payment-function',
+      '/aws/ecs/user-service',
+      '/aws/apigateway/ministack-api',
+    ];
+  }
+
+  async getLogStreams(logGroup: string): Promise<string[]> {
+    const groups: Record<string, string[]> = {
+      '/aws/lambda/auth-function': [
+        '2026/05/30/[$LATEST]auth-stream-1',
+        '2026/05/30/[$LATEST]auth-stream-2',
+      ],
+      '/aws/lambda/payment-function': ['2026/05/30/[$LATEST]payment-stream-1'],
+      '/aws/ecs/user-service': ['ecs-user-instance-abc', 'ecs-user-instance-xyz'],
+      '/aws/apigateway/ministack-api': ['api-stage-prod-stream'],
+    };
+    return groups[logGroup] || [];
+  }
+
+  async streamLogs(
+    onLog: (log: string) => void,
+    filter?: { logGroup?: string; logStream?: string },
+  ): Promise<() => void> {
+    const defaultGroup = filter?.logGroup || '/aws/lambda/auth-function';
+    const defaultStream = filter?.logStream || '2026/05/30/[$LATEST]auth-stream-1';
+
     const levels = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
     const messages = [
       'User login successful',
@@ -57,7 +84,7 @@ export class MiniStackProvider implements RuntimeProvider {
     const intervalId = setInterval(() => {
       const timestamp = new Date().toISOString();
       const level = levels[Math.floor(secureRandom() * levels.length)];
-      const service = services[Math.floor(secureRandom() * services.length)];
+      const service = defaultGroup.split('/').pop() || 'auth-service';
       const messageText = messages[Math.floor(secureRandom() * messages.length)];
 
       const attachPayload = secureRandom() > 0.5;
@@ -73,6 +100,8 @@ export class MiniStackProvider implements RuntimeProvider {
           level,
           service,
           message: messageText,
+          logGroup: defaultGroup,
+          logStream: defaultStream,
           ...(payload ? { payload } : {}),
         });
       } else {

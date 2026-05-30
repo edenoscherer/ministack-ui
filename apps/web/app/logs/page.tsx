@@ -1,14 +1,76 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LogViewer } from '@ministack-ui/ui';
 import { useLogStream } from '../../hooks/useLogStream';
+import { useLogStore } from '../../store/useLogStore';
 
 export default function LogsPage() {
   const [provider, setProvider] = useState<'ministack' | 'localstack'>('ministack');
 
   const { logs, isPaused, togglePause, autoScroll, toggleAutoScroll, clearLogs, connectionStatus } =
     useLogStream(provider);
+
+  const logGroups = useLogStore((s) => s.logGroups);
+  const logStreams = useLogStore((s) => s.logStreams);
+  const selectedLogGroup = useLogStore((s) => s.selectedLogGroup);
+  const selectedLogStream = useLogStore((s) => s.selectedLogStream);
+  const setLogGroups = useLogStore((s) => s.setLogGroups);
+  const setLogStreams = useLogStore((s) => s.setLogStreams);
+  const setSelectedLogGroup = useLogStore((s) => s.setSelectedLogGroup);
+  const setSelectedLogStream = useLogStore((s) => s.setSelectedLogStream);
+  const isLoadingMetadata = useLogStore((s) => s.isLoadingMetadata);
+  const setIsLoadingMetadata = useLogStore((s) => s.setIsLoadingMetadata);
+
+  // Reset selectors when switching providers
+  useEffect(() => {
+    setSelectedLogGroup('ALL');
+    setSelectedLogStream('ALL');
+  }, [provider, setSelectedLogGroup, setSelectedLogStream]);
+
+  // Fetch Log Groups when provider changes
+  useEffect(() => {
+    async function fetchGroups() {
+      setIsLoadingMetadata(true);
+      try {
+        const res = await fetch(`/api/logs/groups?provider=${provider}`);
+        const data = await res.json();
+        if (data.data?.groups) {
+          setLogGroups(data.data.groups);
+        }
+      } catch (err) {
+        console.error('Failed to fetch log groups:', err);
+      } finally {
+        setIsLoadingMetadata(false);
+      }
+    }
+    fetchGroups();
+  }, [provider, setLogGroups, setIsLoadingMetadata]);
+
+  // Fetch Log Streams when selectedLogGroup changes
+  useEffect(() => {
+    if (selectedLogGroup === 'ALL') {
+      setLogStreams([]);
+      return;
+    }
+    async function fetchStreams() {
+      setIsLoadingMetadata(true);
+      try {
+        const res = await fetch(
+          `/api/logs/streams?provider=${provider}&logGroup=${encodeURIComponent(selectedLogGroup)}`,
+        );
+        const data = await res.json();
+        if (data.data?.streams) {
+          setLogStreams(data.data.streams);
+        }
+      } catch (err) {
+        console.error('Failed to fetch log streams:', err);
+      } finally {
+        setIsLoadingMetadata(false);
+      }
+    }
+    fetchStreams();
+  }, [provider, selectedLogGroup, setLogStreams, setIsLoadingMetadata]);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-zinc-950 text-zinc-100 p-6 overflow-hidden">
@@ -58,6 +120,13 @@ export default function LogsPage() {
           onAutoScrollToggle={toggleAutoScroll}
           onClear={clearLogs}
           connectionStatus={connectionStatus}
+          logGroups={logGroups}
+          logStreams={logStreams}
+          selectedLogGroup={selectedLogGroup}
+          selectedLogStream={selectedLogStream}
+          onLogGroupChange={setSelectedLogGroup}
+          onLogStreamChange={setSelectedLogStream}
+          isLoadingMetadata={isLoadingMetadata}
         />
       </div>
     </div>

@@ -20,6 +20,8 @@ export interface LogMessage {
   service: string;
   message: string;
   payload?: Record<string, any>;
+  logGroup?: string;
+  logStream?: string;
 }
 
 export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED';
