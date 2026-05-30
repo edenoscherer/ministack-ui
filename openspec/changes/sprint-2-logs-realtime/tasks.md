@@ -37,6 +37,6 @@
 
 ## 7. Verification & Code Quality
 
-- [ ] 7.1 Executar a verificação de tipos estritos do TypeScript em todo o monorepo (`pnpm typecheck`).
-- [ ] 7.2 Executar testes automatizados e o lint nos pacotes (`pnpm test` e `pnpm lint`).
-- [ ] 7.3 Efetuar commits respeitando as diretrizes de conventional commits com a assinatura das especificações.
+- [x] 7.1 Executar a verificação de tipos estritos do TypeScript em todo o monorepo (`pnpm typecheck`).
+- [x] 7.2 Executar testes automatizados e o lint nos pacotes (`pnpm test` e `pnpm lint`).
+- [x] 7.3 Efetuar commits respeitando as diretrizes de conventional commits com a assinatura das especificações.
