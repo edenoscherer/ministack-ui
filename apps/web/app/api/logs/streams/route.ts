@@ -23,11 +23,12 @@ export async function GET(request: NextRequest) {
   try {
     const streams = await provider.getLogStreams(logGroup);
     return NextResponse.json({ data: { streams }, error: null });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to list log streams';
     return NextResponse.json(
       {
         data: null,
-        error: { message: error.message || 'Failed to list log streams', code: 'INTERNAL_ERROR' },
+        error: { message, code: 'INTERNAL_ERROR' },
       },
       { status: 500 },
     );
