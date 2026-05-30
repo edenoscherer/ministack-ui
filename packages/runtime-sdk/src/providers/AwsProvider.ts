@@ -17,7 +17,18 @@ export class AwsProvider implements RuntimeProvider {
     throw new Error('not implemented');
   }
 
-  async streamLogs(onLog: (log: string) => void): Promise<() => void> {
+  async getLogGroups(): Promise<string[]> {
+    return [];
+  }
+
+  async getLogStreams(logGroup: string): Promise<string[]> {
+    return [];
+  }
+
+  async streamLogs(
+    onLog: (log: string) => void,
+    filter?: { logGroup?: string; logStream?: string },
+  ): Promise<() => void> {
     // Retorna uma função de desinscrição vazia, a integração com a AWS real será em sprint posterior.
     return () => {};
   }

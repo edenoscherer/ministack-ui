@@ -11,6 +11,15 @@ export interface LogViewerProps {
   readonly onAutoScrollToggle?: () => void;
   readonly onClear?: () => void;
   readonly connectionStatus?: ConnectionStatus;
+
+  // CloudWatch additions
+  readonly logGroups?: string[];
+  readonly logStreams?: string[];
+  readonly selectedLogGroup?: string;
+  readonly selectedLogStream?: string;
+  readonly onLogGroupChange?: (group: string) => void;
+  readonly onLogStreamChange?: (stream: string) => void;
+  readonly isLoadingMetadata?: boolean;
 }
 
 const levelStyles: Record<LogLevel, { text: string; bg: string; border: string }> = {
@@ -28,6 +37,13 @@ export function LogViewer({
   onAutoScrollToggle,
   onClear,
   connectionStatus = 'DISCONNECTED',
+  logGroups = [],
+  logStreams = [],
+  selectedLogGroup = 'ALL',
+  selectedLogStream = 'ALL',
+  onLogGroupChange,
+  onLogStreamChange,
+  isLoadingMetadata = false,
 }: LogViewerProps): JSX.Element {
   const [searchText, setSearchText] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
@@ -133,18 +149,53 @@ export function LogViewer({
               <option value="DEBUG">DEBUG</option>
             </select>
 
-            <select
-              value={selectedService}
-              onChange={(e) => setSelectedService((e.target as HTMLSelectElement).value)}
-              className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer max-w-[150px]"
-            >
-              <option value="ALL">Todos Serviços</option>
-              {availableServices.map((service) => (
-                <option key={service} value={service}>
-                  {service}
-                </option>
-              ))}
-            </select>
+            {logGroups && logGroups.length > 0 ? (
+              <>
+                <select
+                  value={selectedLogGroup}
+                  onChange={(e) => onLogGroupChange?.((e.target as HTMLSelectElement).value)}
+                  className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer max-w-[180px] hover:border-zinc-700 transition-colors"
+                >
+                  <option value="ALL">Todos os Grupos</option>
+                  {logGroups.map((group) => (
+                    <option key={group} value={group}>
+                      {group}
+                    </option>
+                  ))}
+                </select>
+
+                {selectedLogGroup !== 'ALL' && logStreams && logStreams.length > 0 && (
+                  <select
+                    value={selectedLogStream}
+                    onChange={(e) => onLogStreamChange?.((e.target as HTMLSelectElement).value)}
+                    className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer max-w-[180px] hover:border-zinc-700 transition-colors animate-in fade-in duration-200"
+                  >
+                    <option value="ALL">Todas as Streams</option>
+                    {logStreams.map((stream) => (
+                      <option key={stream} value={stream}>
+                        {stream}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {isLoadingMetadata && (
+                  <span className="text-[10px] text-zinc-500 animate-pulse">Carregando...</span>
+                )}
+              </>
+            ) : (
+              <select
+                value={selectedService}
+                onChange={(e) => setSelectedService((e.target as HTMLSelectElement).value)}
+                className="bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700 cursor-pointer max-w-[150px]"
+              >
+                <option value="ALL">Todos Serviços</option>
+                {availableServices.map((service) => (
+                  <option key={service} value={service}>
+                    {service}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           {/* Control Buttons */}
@@ -293,6 +344,22 @@ export function LogViewer({
                   {selectedLog.service}
                 </span>
               </div>
+              {selectedLog.logGroup && (
+                <div className="text-[11px] flex justify-between gap-4">
+                  <span className="text-zinc-500 flex-shrink-0">Log Group:</span>
+                  <span className="font-mono text-zinc-300 select-all break-all text-right">
+                    {selectedLog.logGroup}
+                  </span>
+                </div>
+              )}
+              {selectedLog.logStream && (
+                <div className="text-[11px] flex justify-between gap-4">
+                  <span className="text-zinc-500 flex-shrink-0">Log Stream:</span>
+                  <span className="font-mono text-zinc-300 select-all break-all text-right">
+                    {selectedLog.logStream}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Message section */}

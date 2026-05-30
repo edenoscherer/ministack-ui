@@ -8,11 +8,25 @@ interface LogState {
   autoScroll: boolean;
   connectionStatus: ConnectionStatus;
 
+  // CloudWatch state
+  logGroups: string[];
+  logStreams: string[];
+  selectedLogGroup: string;
+  selectedLogStream: string;
+  isLoadingMetadata: boolean;
+
   addLog: (log: LogMessage) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
   togglePause: () => void;
   toggleAutoScroll: () => void;
   clearLogs: () => void;
+
+  // CloudWatch actions
+  setLogGroups: (groups: string[]) => void;
+  setLogStreams: (streams: string[]) => void;
+  setSelectedLogGroup: (group: string) => void;
+  setSelectedLogStream: (stream: string) => void;
+  setIsLoadingMetadata: (loading: boolean) => void;
 }
 
 const MAX_LOGS_LIMIT = 1000;
@@ -23,6 +37,12 @@ export const useLogStore = create<LogState>((set) => ({
   isPaused: false,
   autoScroll: true,
   connectionStatus: 'DISCONNECTED',
+
+  logGroups: [],
+  logStreams: [],
+  selectedLogGroup: 'ALL',
+  selectedLogStream: 'ALL',
+  isLoadingMetadata: false,
 
   addLog: (log) =>
     set((state) => {
@@ -72,4 +92,16 @@ export const useLogStore = create<LogState>((set) => ({
   toggleAutoScroll: () => set((state) => ({ autoScroll: !state.autoScroll })),
 
   clearLogs: () => set({ logs: [], pendingLogs: [] }),
+
+  setLogGroups: (logGroups) => set({ logGroups }),
+
+  setLogStreams: (logStreams) => set({ logStreams }),
+
+  setSelectedLogGroup: (selectedLogGroup) =>
+    set({ selectedLogGroup, selectedLogStream: 'ALL', logs: [], pendingLogs: [] }),
+
+  setSelectedLogStream: (selectedLogStream) =>
+    set({ selectedLogStream, logs: [], pendingLogs: [] }),
+
+  setIsLoadingMetadata: (isLoadingMetadata) => set({ isLoadingMetadata }),
 }));
