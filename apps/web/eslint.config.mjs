@@ -1,16 +1,10 @@
-import { FlatCompat } from "@eslint/eslintrc";
-import nextConfig from "@ministack-ui/eslint-config/next";
-
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
+import { createNextConfig } from '@ministack-ui/eslint-config/next';
 
 const eslintConfig = [
   {
-    ignores: [".next/**", "node_modules/**", "dist/**", "next-env.d.ts"],
+    ignores: ['.next/**', 'node_modules/**', 'dist/**', 'next-env.d.ts'],
   },
-  ...compat.extends("next/core-web-vitals"),
-  ...nextConfig,
+  ...createNextConfig({ baseDirectory: import.meta.dirname }),
 ];
 
 export default eslintConfig;

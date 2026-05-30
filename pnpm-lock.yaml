@@ -4,6 +4,10 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@types/react': ^19.0.0
+  '@types/react-dom': ^19.0.0
+
 importers:
 
   .:
@@ -17,6 +21,9 @@ importers:
       '@commitlint/types':
         specifier: ^19.5.0
         version: 19.8.1
+      eslint:
+        specifier: ^9.18.0
+        version: 9.39.4(jiti@2.7.0)
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -52,8 +59,8 @@ importers:
         version: 18.3.1(react@18.3.1)
     devDependencies:
       '@types/react':
-        specifier: ^18.3.18
-        version: 18.3.29
+        specifier: ^19.0.0
+        version: 19.2.15
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
@@ -152,9 +159,6 @@ importers:
         specifier: ^5.0.3
         version: 5.0.14(@types/react@19.2.15)(react@19.2.6)
     devDependencies:
-      '@eslint/eslintrc':
-        specifier: ^3.2.0
-        version: 3.3.5
       '@ministack-ui/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -171,7 +175,7 @@ importers:
         specifier: ^9.18.0
         version: 9.39.4(jiti@2.7.0)
       eslint-config-next:
-        specifier: 15.1.4
+        specifier: ^15.1.4
         version: 15.1.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       tailwindcss:
         specifier: ^3.4.17
@@ -1611,7 +1615,7 @@ packages:
   '@mdx-js/react@3.1.1':
     resolution: {integrity: sha512-f++rKLQgUVYDAtECQ6fn/is15GkEH9+nZPM3MS0RcxVqoTfawHvDlSCH7JbMhAM6uJ32v3eXLvLmLvjGu7PTQw==}
     peerDependencies:
-      '@types/react': '>=16'
+      '@types/react': ^19.0.0
       react: '>=16'
 
   '@napi-rs/simple-git-android-arm-eabi@0.1.22':
@@ -2323,16 +2327,10 @@ packages:
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
 
-  '@types/prop-types@15.7.15':
-    resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
-
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
-      '@types/react': ^19.2.0
-
-  '@types/react@18.3.29':
-    resolution: {integrity: sha512-ch0qJdr2JY0r04NXSprbK6TXOgnaJ1Tz23fm5W+z0/CBah6BSBc3n96h7K9GOtwh0HrilNWHIBzE1Ko4Dcw/Wg==}
+      '@types/react': ^19.0.0
 
   '@types/react@19.2.15':
     resolution: {integrity: sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q==}
@@ -6551,7 +6549,7 @@ packages:
     resolution: {integrity: sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': '>=18.0.0'
+      '@types/react': ^19.0.0
       immer: '>=9.0.6'
       react: '>=18.0.0'
       use-sync-external-store: '>=1.2.0'
@@ -8150,7 +8148,7 @@ snapshots:
   '@mdx-js/react@2.3.0(react@18.3.1)':
     dependencies:
       '@types/mdx': 2.0.13
-      '@types/react': 18.3.29
+      '@types/react': 19.2.15
       react: 18.3.1
 
   '@mdx-js/react@3.1.1(@types/react@19.2.15)(react@19.2.6)':
@@ -8974,16 +8972,9 @@ snapshots:
 
   '@types/parse-json@4.0.2': {}
 
-  '@types/prop-types@15.7.15': {}
-
   '@types/react-dom@19.2.3(@types/react@19.2.15)':
     dependencies:
       '@types/react': 19.2.15
-
-  '@types/react@18.3.29':
-    dependencies:
-      '@types/prop-types': 15.7.15
-      csstype: 3.2.3
 
   '@types/react@19.2.15':
     dependencies:

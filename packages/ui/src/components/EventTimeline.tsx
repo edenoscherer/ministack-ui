@@ -1,3 +1,5 @@
+import type { JSX } from 'react';
+
 export interface TimelineEvent {
   id: string;
   label: string;
@@ -8,7 +10,7 @@ export interface EventTimelineProps {
   events?: TimelineEvent[];
 }
 
-export function EventTimeline({ events = [] }: EventTimelineProps) {
+export function EventTimeline({ events = [] }: EventTimelineProps): JSX.Element {
   return (
     <ul className="space-y-2">
       {events.map((e) => (

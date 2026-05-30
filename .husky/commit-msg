@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
-export PATH="$HOME/.nvm/versions/node/v24.13.1/bin:$PATH"
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# Activate node version from .nvmrc (or nvm default if no .nvmrc)
+nvm use --silent 2>/dev/null || true
+# Volta fallback
+[ -d "$HOME/.volta/bin" ] && export PATH="$HOME/.volta/bin:$PATH"
+
 npx --no -- commitlint --edit "$1"
