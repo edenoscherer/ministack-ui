@@ -78,17 +78,10 @@ export function JsonTree({
 
   return (
     <div className="font-mono text-sm leading-6 py-0.5">
-      <div
-        className="flex items-center cursor-pointer hover:bg-zinc-800/50 rounded-md px-1.5 py-0.5 transition-colors select-none group w-fit focus:outline-none focus:ring-1 focus:ring-zinc-700/50"
+      <button
+        type="button"
+        className="flex items-center cursor-pointer hover:bg-zinc-800/50 rounded-md px-1.5 py-0.5 transition-colors select-none group w-fit focus:outline-none focus:ring-1 focus:ring-zinc-700/50 bg-transparent border-0 p-0 text-left font-mono font-inherit"
         onClick={() => setExpanded(!expanded)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }
-        }}
-        role="button"
-        tabIndex={0}
         style={indentStyle}
       >
         <span className="text-zinc-500 w-4 flex items-center justify-center mr-1 text-[9px] transform transition-transform group-hover:text-zinc-300">
@@ -109,7 +102,7 @@ export function JsonTree({
             {!isLast && ','}
           </span>
         )}
-      </div>
+      </button>
 
       {expanded && (
         <div className="mt-0.5">

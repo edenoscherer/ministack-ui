@@ -202,18 +202,11 @@ export function LogViewer({
               const isSelected = selectedLog?.id === log.id;
 
               return (
-                <div
+                <button
+                  type="button"
                   key={log.id}
                   onClick={() => setSelectedLog(isSelected ? null : log)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setSelectedLog(isSelected ? null : log);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className={`flex items-start gap-3 py-1 px-2 rounded-md transition-colors cursor-pointer group focus:outline-none focus:ring-1 focus:ring-zinc-700/50 ${
+                  className={`w-full flex items-start gap-3 py-1 px-2 rounded-md transition-colors cursor-pointer group focus:outline-none focus:ring-1 focus:ring-zinc-700/50 bg-transparent border-0 text-left font-mono font-inherit ${
                     isSelected ? 'bg-zinc-800 text-white' : 'hover:bg-zinc-900/60 text-zinc-300'
                   }`}
                 >
@@ -249,7 +242,7 @@ export function LogViewer({
                       {'{ } Payload'}
                     </span>
                   )}
-                </div>
+                </button>
               );
             })
           )}

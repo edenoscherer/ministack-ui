@@ -3,7 +3,7 @@ import type { LogMessage, LogLevel } from '@ministack-ui/shared';
 // Matches: 2026-05-30T13:00:00.000Z [INFO] service-name: Message text { "payload": "json" }
 // Case-sensitive exact regex to reduce backtracking complexity and avoid duplicate class alerts
 const RAW_LOG_REGEX =
-  /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[(INFO|WARN|ERROR|DEBUG|info|warn|error|debug)\]\s+([a-zA-Z0-9_-]+):\s+(.*?)(?:\s+(\{.*\}))?$/;
+  /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[([a-zA-Z]+)\]\s+([a-zA-Z0-9_-]+):\s+(.*?)(?:\s+(\{.*\}))?$/;
 
 function parseJsonLog(trimmed: string): LogMessage | null {
   if (!(trimmed.startsWith('{') && trimmed.endsWith('}'))) {
@@ -31,6 +31,7 @@ function parseJsonLog(trimmed: string): LogMessage | null {
     };
   } catch (e) {
     // Return null on failure to allow falling back to regex parser
+    console.debug('JSON log parse failed, falling back to regex parser:', e);
     return null;
   }
 }
@@ -55,6 +56,7 @@ function parseRegexLog(trimmed: string): LogMessage | null {
       payload = JSON.parse(rawPayload);
     } catch (e) {
       // Return payload as undefined if payload is malformed JSON
+      console.debug('Failed to parse regex payload JSON:', e);
       payload = undefined;
     }
   }
@@ -88,6 +90,7 @@ function parseFallbackLog(trimmed: string): LogMessage {
       }
     } catch (e) {
       // Keep initial timestamp if date parsing throws error
+      console.debug('Fallback date parsing error:', e);
       timestamp = new Date().toISOString();
     }
   }
