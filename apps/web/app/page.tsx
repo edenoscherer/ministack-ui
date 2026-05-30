@@ -15,13 +15,14 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 import { MiniLineChart, ServiceIcon, StatusBadge } from '@ministack-ui/ui';
+import { SERVICES } from '../lib/mock-data-helper';
 import {
-  SERVICES,
   SERVICE_TYPE_LABEL,
   RECENT_TRACES,
   API_LOAD_SERIES,
   type ServiceType,
   type ServiceStatus,
+  type Service,
 } from '../lib/mock-data';
 
 const TYPE_FILTERS: {
@@ -51,7 +52,7 @@ export default function DashboardPage(): React.JSX.Element {
   const [statusFilter, setStatusFilter] = useState<'all' | ServiceStatus>('all');
 
   const filtered = useMemo(() => {
-    return SERVICES.filter((s) => {
+    return SERVICES.filter((s: Service) => {
       if (query && !s.name.toLowerCase().includes(query.toLowerCase())) return false;
       if (typeFilter !== 'all' && TYPE_GROUP[s.type] !== typeFilter) return false;
       if (statusFilter !== 'all' && s.status !== statusFilter) return false;
@@ -191,7 +192,7 @@ export default function DashboardPage(): React.JSX.Element {
           </div>
 
           <ul className="divide-y divide-border">
-            {filtered.map((s) => (
+            {filtered.map((s: Service) => (
               <li
                 key={s.id}
                 className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/40"
