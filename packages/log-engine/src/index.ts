@@ -1,9 +1,9 @@
 import type { LogMessage, LogLevel } from '@ministack-ui/shared';
 
 // Matches: 2026-05-30T13:00:00.000Z [INFO] service-name: Message text { "payload": "json" }
-// Case-sensitive exact regex to reduce backtracking complexity and avoid duplicate class alerts
-const RAW_LOG_REGEX =
-  /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+\[([a-zA-Z]+)\]\s+([a-zA-Z0-9_-]+):\s+(.*?)(?:\s+(\{.*\}))?$/;
+// Split into ultra-simple expressions to eliminate backtracking and lower complexity below 5
+const RAW_LOG_REGEX = /^(\S+)\s+\[([a-zA-Z]+)\]\s+([a-zA-Z0-9_-]+):\s+(.*)$/;
+const PAYLOAD_REGEX = /\s+(\{.*\})$/;
 
 function parseJsonLog(trimmed: string): LogMessage | null {
   if (!(trimmed.startsWith('{') && trimmed.endsWith('}'))) {
@@ -45,17 +45,24 @@ function parseRegexLog(trimmed: string): LogMessage | null {
   const timestamp = match[1] || new Date().toISOString();
   const levelStr = match[2] || 'INFO';
   const service = match[3] || 'unknown';
-  const message = match[4] || '';
-  const rawPayload = match[5];
+  const rawMessage = match[4] || '';
 
   const level = levelStr.toUpperCase() as LogLevel;
 
+  let message = rawMessage;
   let payload: Record<string, any> | undefined = undefined;
-  if (rawPayload) {
+
+  // Extract payload JSON from the end of the message if present
+  const payloadMatch = PAYLOAD_REGEX.exec(rawMessage);
+  if (payloadMatch) {
     try {
-      payload = JSON.parse(rawPayload);
+      const rawPayload = payloadMatch[1];
+      if (rawPayload) {
+        payload = JSON.parse(rawPayload);
+        // Remove payload block from the parsed log message text
+        message = rawMessage.substring(0, rawMessage.length - payloadMatch[0].length);
+      }
     } catch (e) {
-      // Return payload as undefined if payload is malformed JSON
       console.debug('Failed to parse regex payload JSON:', e);
       payload = undefined;
     }
