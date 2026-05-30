@@ -1,19 +1,5 @@
 import type { RuntimeProvider } from '../types';
-
-// Cryptographically secure helper for mock log streaming to avoid Math.random hotspots
-function secureRandom(): number {
-  try {
-    if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
-      const array = new Uint32Array(1);
-      globalThis.crypto.getRandomValues(array);
-      return (array[0] ?? 0) / 4294967296; // Normalize to [0, 1)
-    }
-  } catch {
-    // Ignore and proceed to fallback
-  }
-  // Safe deterministic scanner-compliant fallback offset without referencing Math.random
-  return (Date.now() * 0.987654321) % 1;
-}
+import { streamMockLogs } from './mockHelper';
 
 export class LocalStackProvider implements RuntimeProvider {
   async logs(): Promise<void> {
@@ -58,7 +44,6 @@ export class LocalStackProvider implements RuntimeProvider {
     const defaultGroup = filter?.logGroup || '/aws/lambda/localstack-s3-trigger';
     const defaultStream = filter?.logStream || 'lambda-s3-stream-1';
 
-    const levels = ['INFO', 'WARN', 'ERROR', 'DEBUG'];
     const messages = [
       'Bucket mini-stack-bucket created successfully',
       'Queue main-dead-letter-queue polling started',
@@ -69,42 +54,22 @@ export class LocalStackProvider implements RuntimeProvider {
       'SQS message processing failed, moving to DLQ: main-dead-letter-queue',
     ];
 
-    let counter = 0;
-    const intervalId = setInterval(() => {
-      const timestamp = new Date().toISOString();
-      const level = levels[Math.floor(secureRandom() * levels.length)];
-      const service = defaultGroup.split('/').pop() || 'localstack-service';
-      const messageText = messages[Math.floor(secureRandom() * messages.length)];
-
-      const payload = {
-        requestId: `req-${Math.floor(secureRandom() * 1000000)}`,
-        executionTimeMs: Math.floor(secureRandom() * 150),
+    const payloads = [
+      {
+        requestId: 'req-localstack-mock',
+        executionTimeMs: 82,
         region: 'us-east-1',
-      };
+      },
+    ];
 
-      let logString = '';
-      const generateJsonLog = secureRandom() > 0.3;
-
-      if (generateJsonLog) {
-        logString = JSON.stringify({
-          id: `localstack-log-${counter++}`,
-          timestamp,
-          level,
-          service,
-          message: messageText,
-          logGroup: defaultGroup,
-          logStream: defaultStream,
-          payload,
-        });
-      } else {
-        logString = `${timestamp} [${level}] ${service}: ${messageText} ${JSON.stringify(payload)}`;
-      }
-
-      onLog(logString);
-    }, 2000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
+    return streamMockLogs(onLog, {
+      defaultGroup,
+      defaultStream,
+      messages,
+      payloads,
+      intervalMs: 2000,
+      idPrefix: 'localstack-log',
+      jsonProbability: 0.3,
+    });
   }
 }
