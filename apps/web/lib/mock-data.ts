@@ -11,8 +11,6 @@ export interface Service {
   lastActivity: string;
 }
 
-import { SERVICES } from './mock-data-helper';
-
 export const SERVICE_TYPE_LABEL: Record<ServiceType, string> = {
   lambda: 'Lambda',
   sqs: 'SQS',

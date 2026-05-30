@@ -12,11 +12,12 @@ export async function GET(request: NextRequest) {
   try {
     const groups = await provider.getLogGroups();
     return NextResponse.json({ data: { groups }, error: null });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to list log groups';
     return NextResponse.json(
       {
         data: null,
-        error: { message: error.message || 'Failed to list log groups', code: 'INTERNAL_ERROR' },
+        error: { message, code: 'INTERNAL_ERROR' },
       },
       { status: 500 },
     );
