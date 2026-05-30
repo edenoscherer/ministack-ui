@@ -3,4 +3,5 @@ export interface RuntimeProvider {
   queues(): Promise<void>;
   topics(): Promise<void>;
   secrets(): Promise<void>;
+  streamLogs(onLog: (log: string) => void): Promise<() => void>;
 }

@@ -216,10 +216,17 @@ importers:
         version: 5.9.3
 
   packages/log-engine:
+    dependencies:
+      '@ministack-ui/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@ministack-ui/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.19.19
       eslint:
         specifier: ^9.18.0
         version: 9.39.4(jiti@2.7.0)
@@ -245,6 +252,9 @@ importers:
       '@ministack-ui/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.19.19
       eslint:
         specifier: ^9.18.0
         version: 9.39.4(jiti@2.7.0)
@@ -266,6 +276,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@ministack-ui/shared':
+        specifier: workspace:*
+        version: link:../shared
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19(yaml@2.9.0)
