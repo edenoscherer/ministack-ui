@@ -46,12 +46,7 @@ export class LocalStackProvider implements RuntimeProvider {
   }
 
   async getLogGroups(): Promise<string[]> {
-    return [
-      '/aws/lambda/localstack-s3-trigger',
-      '/aws/lambda/localstack-sqs-consumer',
-      '/aws/rds/localstack-db',
-      '/aws/ecs/localstack-web-container',
-    ];
+    return localStackLogGroupsStore.map((g) => g.name);
   }
 
   async getLogStreams(logGroup: string): Promise<string[]> {

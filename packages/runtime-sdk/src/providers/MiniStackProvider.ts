@@ -1,34 +1,30 @@
+import {
+  CloudWatchLogsClient,
+  DescribeLogGroupsCommand,
+  DescribeLogStreamsCommand,
+  CreateLogGroupCommand,
+  DeleteLogGroupCommand,
+  PutRetentionPolicyCommand,
+  FilterLogEventsCommand,
+} from '@aws-sdk/client-cloudwatch-logs';
 import type { RuntimeProvider, LogGroupMetadata } from '../types';
-import { streamMockLogs } from './mockHelper';
 
-let miniStackLogGroupsStore: LogGroupMetadata[] = [
-  {
-    name: '/demo-app/api',
-    retentionDays: null,
-    storedBytes: 7163136,
-    createdAt: '2026-01-15T00:00:00Z',
-  },
-  {
-    name: '/ecs/demo-api',
-    retentionDays: null,
-    storedBytes: 1829918,
-    createdAt: '2026-02-10T00:00:00Z',
-  },
-  {
-    name: '/ecs/demo-worker',
-    retentionDays: null,
-    storedBytes: 1159495,
-    createdAt: '2026-02-10T00:00:00Z',
-  },
-  {
-    name: '/infra/ministack',
-    retentionDays: null,
-    storedBytes: 0,
-    createdAt: '2026-03-01T00:00:00Z',
-  },
-];
+function createClient(): CloudWatchLogsClient {
+  return new CloudWatchLogsClient({
+    endpoint: process.env.MINISTACK_ENDPOINT ?? 'http://localhost:4566',
+    region: process.env.AWS_REGION ?? 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'ministack',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'ministack',
+    },
+    // Disable retry/timeout noise in local dev
+    maxAttempts: 1,
+  });
+}
 
 export class MiniStackProvider implements RuntimeProvider {
+  private readonly client = createClient();
+
   async logs(): Promise<void> {
     throw new Error('not implemented');
   }
@@ -46,79 +42,106 @@ export class MiniStackProvider implements RuntimeProvider {
   }
 
   async getLogGroups(): Promise<string[]> {
-    return [
-      '/aws/lambda/auth-function',
-      '/aws/lambda/payment-function',
-      '/aws/ecs/user-service',
-      '/aws/apigateway/ministack-api',
-    ];
+    const res = await this.client.send(new DescribeLogGroupsCommand({ limit: 50 }));
+    return (res.logGroups ?? []).map((g) => g.logGroupName ?? '').filter(Boolean);
   }
 
   async getLogStreams(logGroup: string): Promise<string[]> {
-    const groups: Record<string, string[]> = {
-      '/aws/lambda/auth-function': [
-        '2026/05/30/[$LATEST]auth-stream-1',
-        '2026/05/30/[$LATEST]auth-stream-2',
-      ],
-      '/aws/lambda/payment-function': ['2026/05/30/[$LATEST]payment-stream-1'],
-      '/aws/ecs/user-service': ['ecs-user-instance-abc', 'ecs-user-instance-xyz'],
-      '/aws/apigateway/ministack-api': ['api-stage-prod-stream'],
-    };
-    return groups[logGroup] || [];
+    const res = await this.client.send(
+      new DescribeLogStreamsCommand({ logGroupName: logGroup, limit: 50 }),
+    );
+    return (res.logStreams ?? []).map((s) => s.logStreamName ?? '').filter(Boolean);
   }
 
   async getLogGroupsWithMetadata(): Promise<LogGroupMetadata[]> {
-    return [...miniStackLogGroupsStore];
+    const res = await this.client.send(new DescribeLogGroupsCommand({ limit: 50 }));
+    return (res.logGroups ?? [])
+      .filter((g) => !!g.logGroupName)
+      .map((g) => ({
+        name: g.logGroupName!,
+        retentionDays: g.retentionInDays ?? null,
+        storedBytes: Number(g.storedBytes ?? 0),
+        createdAt: g.creationTime
+          ? new Date(g.creationTime).toISOString()
+          : new Date().toISOString(),
+      }));
   }
 
   async createLogGroup(name: string, retentionDays?: number | null): Promise<LogGroupMetadata> {
-    const group: LogGroupMetadata = {
+    await this.client.send(new CreateLogGroupCommand({ logGroupName: name }));
+    if (retentionDays != null) {
+      await this.client.send(
+        new PutRetentionPolicyCommand({ logGroupName: name, retentionInDays: retentionDays }),
+      );
+    }
+    return {
       name,
       retentionDays: retentionDays ?? null,
       storedBytes: 0,
       createdAt: new Date().toISOString(),
     };
-    miniStackLogGroupsStore = [...miniStackLogGroupsStore, group];
-    return group;
   }
 
   async deleteLogGroup(name: string): Promise<void> {
-    miniStackLogGroupsStore = miniStackLogGroupsStore.filter((g) => g.name !== name);
+    await this.client.send(new DeleteLogGroupCommand({ logGroupName: name }));
   }
 
   async streamLogs(
     onLog: (log: string) => void,
     filter?: { logGroup?: string; logStream?: string },
   ): Promise<() => void> {
-    const defaultGroup = filter?.logGroup || '/aws/lambda/auth-function';
-    const defaultStream = filter?.logStream || '2026/05/30/[$LATEST]auth-stream-1';
+    let stopped = false;
+    // Start from now — only tail new events
+    let lastTimestamp = Date.now();
 
-    const messages = [
-      'User login successful',
-      'Failed connection attempt from IP 192.168.1.100',
-      'Processing payment for invoice #89283',
-      'Payment processed successfully',
-      'Notification email sent to user@example.com',
-      'Database query pool warning: connection took 250ms',
-      'Fatal error: Cannot connect to redis-cache-01',
-      'Fetching user profile data for ID 582910',
-    ];
-    const payloads = [
-      { userId: '582910', ip: '127.0.0.1', durationMs: 42 },
-      { error: 'Connection timeout', host: 'redis-cache-01', port: 6379, retries: 3 },
-      { invoiceId: '89283', amount: 249.9, currency: 'BRL', gateway: 'stripe' },
-      { email: 'user@example.com', templateId: 'welcome-email', status: 'delivered' },
-      null,
-    ];
+    // FilterLogEventsCommand requires a logGroupName; resolve from filter or pick the first group
+    let logGroupName = filter?.logGroup ?? null;
+    if (!logGroupName) {
+      const groups = await this.getLogGroups();
+      logGroupName = groups[0] ?? null;
+    }
 
-    return streamMockLogs(onLog, {
-      defaultGroup,
-      defaultStream,
-      messages,
-      payloads,
-      intervalMs: 1500,
-      idPrefix: 'log',
-      jsonProbability: 0.4,
-    });
+    if (!logGroupName) {
+      // No log groups exist on the server — return a no-op stream
+      return () => {};
+    }
+
+    const resolvedGroup = logGroupName;
+
+    const poll = async () => {
+      if (stopped) return;
+
+      try {
+        const res = await this.client.send(
+          new FilterLogEventsCommand({
+            logGroupName: resolvedGroup,
+            logStreamNames: filter?.logStream ? [filter.logStream] : undefined,
+            startTime: lastTimestamp,
+            limit: 50,
+          }),
+        );
+
+        for (const event of res.events ?? []) {
+          if (!event.message || event.timestamp == null) continue;
+          // Only emit events we haven't seen yet
+          if (event.timestamp >= lastTimestamp) {
+            onLog(event.message);
+            lastTimestamp = event.timestamp + 1;
+          }
+        }
+      } catch (err) {
+        // Log but keep polling — transient connectivity issues are common in local dev
+        console.error('[MiniStackProvider] streamLogs poll error:', err);
+      }
+
+      if (!stopped) {
+        setTimeout(poll, 1000);
+      }
+    };
+
+    poll();
+    return () => {
+      stopped = true;
+    };
   }
 }

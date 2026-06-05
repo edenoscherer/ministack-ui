@@ -46,5 +46,5 @@
 ## 8. Commits e Pull Request
 
 - [x] 8.1 Verificar que `pnpm typecheck` e `pnpm lint` passam sem erros.
-- [ ] 8.2 Criar commit com mensagem `feat(cloudwatch): add log groups management page` cobrindo todas as alterações.
-- [ ] 8.3 Criar Pull Request na branch `feat/cloudwatch-log-groups-management` → `main` com título `feat(cloudwatch): add CloudWatch Log Groups management page` e descrição resumindo as capabilities adicionadas, workspaces afetados e link para o change `openspec/changes/cloudwatch-log-groups-management/`.
+- [x] 8.2 Criar commit com mensagem `feat(cloudwatch): add log groups management page` cobrindo todas as alterações.
+- [x] 8.3 Criar Pull Request na branch `feat/cloudwatch-log-groups-management` → `main` com título `feat(cloudwatch): add CloudWatch Log Groups management page` e descrição resumindo as capabilities adicionadas, workspaces afetados e link para o change `openspec/changes/cloudwatch-log-groups-management/`.
