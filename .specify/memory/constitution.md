@@ -1,50 +1,157 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Versão: 1.0.0 → 2.0.0
+Tipo de bump: MAJOR — reescrita completa (português), 2 princípios adicionados
 
-## Core Principles
+Princípios modificados:
+  I.   Spec-Driven Development (SDD)         — inalterado (traduzido)
+  II.  Runtime Abstraction                   → II. Abstração de Runtime (traduzido)
+  III. Streaming-First                       — inalterado (traduzido)
+  IV.  Storybook-First UI                    → IV. UI-First no Storybook (traduzido)
+  V.   Workflow-First UX                     → V. UX Workflow-First (traduzido)
+  VI.  Quality Gates                         → VI. TypeScript Strict e Linting (refatorado)
+  VII. [novo] Testes de Componente
+  VIII.[novo] Testes de Integração
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+Seções adicionadas: nenhuma
+Seções removidas: nenhuma (stack constraints e workflow mantidos)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Templates atualizados:
+  ✅ .specify/templates/plan-template.md — Constitution Check gates atualizados
+  ✅ .specify/templates/spec-template.md — alinhamento verificado, sem alterações
+  ✅ .specify/templates/tasks-template.md — alinhamento verificado, sem alterações
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+TODOs pendentes: nenhum
+-->
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+# MiniStack UI — Constituição
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+## Princípios Fundamentais
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### I. Spec-Driven Development (SDD)
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+Toda implementação DEVE nascer de uma spec. Código não é source of truth — specs são.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- Uma feature DEVE ter `spec.md`, `plan.md` e `tasks.md` com critérios de aceite definidos
+  antes de qualquer linha de código ser escrita.
+- As fases DEVEM ser executadas em ordem: Constitution → Specify → Clarify → Plan → Tasks → Implement.
+- Os artefatos de spec residem em `specs/[feature-name]/` e NÃO DEVEM ser deletados ou contornados.
+- `/speckit.clarify` DEVE ser utilizado para resolver ambiguidades antes que `/speckit.plan` avance.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### II. Abstração de Runtime
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+O frontend NUNCA DEVE importar AWS SDK nem comunicar diretamente com qualquer runtime de nuvem.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- Todo acesso a runtime DEVE seguir o fluxo: `apps/web` → Route Handlers → `packages/runtime-sdk`.
+- `packages/runtime-sdk` DEVE expor apenas a interface `RuntimeProvider`. As implementações
+  (`MiniStackProvider`, `LocalStackProvider`, `AwsProvider`) são intercambiáveis sem qualquer
+  alteração no código de UI.
+- Lógica específica de runtime NÃO É PERMITIDA dentro de componentes React ou em `packages/ui`.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### III. Streaming-First
+
+A plataforma NUNCA DEVE exigir refresh manual de página para refletir mudanças de estado do runtime.
+
+- Todos os dados em tempo real (logs, mensagens de fila, eventos) DEVEM transmitir via SSE.
+- Todo endpoint SSE DEVE implementar: reconnect, heartbeat, pause e auto-scroll.
+- Polling NÃO É PERMITIDO como substituto para streaming.
+
+### IV. UI-First no Storybook
+
+Todo componente de UI DEVE ser construído e validado no Storybook antes de ser usado em `apps/web`.
+
+- Um componente NÃO DEVE ser integrado a `apps/web` sem um arquivo `.stories.tsx` correspondente.
+- Stories DEVEM cobrir: estado padrão, estado de loading e estado de erro, cada um com mock data próprio.
+- Os seguintes componentes são permanentemente obrigatórios no Storybook:
+  `LogViewer`, `JsonViewer`, `EventTimeline`, `QueueReplayModal`, `RuntimeStatus`.
+
+### V. UX Workflow-First
+
+A UX DEVE guiar o usuário por fluxos operacionais, não expor listas de recursos para CRUD.
+
+- A profundidade de navegação NÃO DEVE exceder 2 níveis.
+- Todos os recursos DEVEM ser acessíveis via busca global.
+- IDs de correlação DEVEM ser navegáveis entre serviços (clicar em um ID navega para seu contexto).
+- O fluxo primário do usuário é: `Logs → Evento → Debugging`, nunca `Recursos → CRUD`.
+
+### VI. TypeScript Strict e Linting
+
+Todo código DEVE passar pelos gates de qualidade automatizados antes de ser integrado.
+
+- TypeScript strict mode DEVE estar habilitado em todos os packages e apps.
+- ESLint + Prettier DEVEM ser aplicados. Nenhum erro de lint é permitido no merge.
+- Hooks Husky de pre-commit DEVEM executar linting e type-checking.
+- Todos os commits DEVEM seguir o formato Conventional Commits.
+
+### VII. Testes de Componente
+
+Todo componente de UI crítico DEVE ter testes de interação no Storybook.
+
+- Interaction tests (via `@storybook/test`) DEVEM cobrir os fluxos principais de cada componente obrigatório.
+- Testes DEVEM ser escritos antes da implementação (test-first quando aplicável).
+- Uma story sem teste de interação NÃO É PERMITIDA para os componentes listados no Princípio IV.
+- Testes de componente NÃO DEVEM depender de estado global nem de chamadas de rede reais —
+  usar mock data definida na própria story.
+
+### VIII. Testes de Integração
+
+Fluxos críticos entre `apps/web`, Route Handlers e `packages/runtime-sdk` DEVEM ser cobertos
+por testes de integração.
+
+- Contratos de API (payloads de request/response) DEVEM ter testes de contrato em `specs/[feature]/contracts/`.
+- Route Handlers que comunicam com `runtime-sdk` DEVEM ter testes de integração usando
+  `MiniStackProvider` como runtime padrão de teste.
+- Testes de integração DEVEM rodar em CI e NUNCA ser ignorados para merge em `main`.
+- Dependências externas (AWS real, LocalStack) DEVEM ser mockadas nos testes de integração —
+  use `MiniStackProvider` ou mocks explícitos.
+
+## Restrições de Stack
+
+As seguintes escolhas são fixas e NÃO DEVEM ser substituídas sem um ADR correspondente em `adr/`:
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Monorepo | Turborepo + pnpm workspaces |
+| Frontend | Next.js 15 (App Router) |
+| UI | Tailwind CSS + shadcn/ui |
+| Estado | TanStack Query (servidor) + Zustand (cliente) |
+| API | Next.js Route Handlers |
+| Runtime SDK | AWS SDK v3 (exclusivo em `packages/runtime-sdk`) |
+| Realtime | SSE |
+| Componentes | Storybook |
+| Testes de componente | Storybook Interaction Tests (`@storybook/test`) |
+| Testes de integração | Vitest |
+| SDD | Spec Kit |
+| Docs públicos | Nextra |
+| ADRs | Markdown em `adr/` |
+
+Mudanças de tecnologia exigem um ADR aprovado em `adr/` antes da implementação.
+
+## Fluxo de Desenvolvimento SDD
+
+Toda feature segue esta sequência sem exceção:
+
+1. `/speckit.constitution` — verificar ou atualizar este arquivo antes de iniciar
+2. `/speckit.specify` → `specs/[feature]/spec.md`
+3. `/speckit.clarify` — resolver ambiguidades
+4. `/speckit.plan` → `plan.md`, `data-model.md`, `research.md`, `contracts/`
+5. `/speckit.tasks` → `specs/[feature]/tasks.md`
+6. `/speckit.implement` — executar tarefas
+7. Criar stories no Storybook para todos os novos componentes de UI
+8. Escrever interaction tests para componentes obrigatórios (Princípio VII)
+9. Escrever testes de integração para Route Handlers críticos (Princípio VIII)
+10. Validar todos os critérios de aceite definidos em `spec.md`
+
+Hooks git em `.specify/extensions.yml` fazem auto-commit a cada fase.
+
+## Governança
+
+- Esta constituição substitui todas as outras práticas de desenvolvimento e acordos informais.
+- Toda emenda DEVE incrementar a versão seguindo semver:
+  MAJOR para remoção/redefinição de princípios, MINOR para adições, PATCH para clarificações.
+- Todos os PRs DEVEM ser verificados quanto à conformidade com estes princípios na revisão.
+- Violações de complexidade DEVEM ser documentadas em um ADR correspondente antes do merge.
+- Para guia de desenvolvimento em tempo de execução, consulte `CLAUDE.md` e `docs/doc.md`.
+
+**Versão**: 2.0.0 | **Ratificada**: 2026-06-05 | **Última emenda**: 2026-06-05

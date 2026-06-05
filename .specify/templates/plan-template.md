@@ -31,7 +31,14 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **SDD (I):** `spec.md` com critérios de aceite e pelo menos uma user story P1 definida
+- [ ] **Abstração de Runtime (II):** Nenhum import de AWS SDK planejado fora de `packages/runtime-sdk`
+- [ ] **Streaming-First (III):** Se a feature expõe dados em tempo real, endpoint SSE com reconnect/heartbeat/pause/auto-scroll está planejado
+- [ ] **UI-First no Storybook (IV):** Todos os novos componentes de UI têm story planejada; estados loading + error cobertos
+- [ ] **UX Workflow-First (V):** Profundidade de navegação ≤ 2 níveis; IDs de correlação navegáveis se aplicável
+- [ ] **TypeScript Strict (VI):** TypeScript strict habilitado; ESLint/Prettier/Husky passando; Conventional Commits aplicado
+- [ ] **Testes de Componente (VII):** Interaction tests planejados para componentes obrigatórios; mock data definida na story
+- [ ] **Testes de Integração (VIII):** Contratos de API cobertos; Route Handlers críticos com testes usando MiniStackProvider
 
 ## Project Structure
 
