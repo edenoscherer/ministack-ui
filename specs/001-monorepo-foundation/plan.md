@@ -29,7 +29,7 @@ nas specs 003/004).
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 - [x] **SDD (I):** `spec.md` com critérios de aceite e user stories P1/P2/P3 definidas; clarificações resolvidas
 - [x] **Abstração de Runtime (II):** Nenhum import de AWS SDK planejado. `packages/shared` é sem efeitos colaterais e não toca runtime; nenhuma exceção necessária
@@ -68,7 +68,7 @@ specs/001-monorepo-foundation/
 ├── package.json               # workspace root: scripts de pipeline, packageManager, engines, devDeps de tooling
 ├── pnpm-workspace.yaml        # globs de workspace: packages/*, apps/*
 ├── turbo.json                 # grafo de tarefas: build, lint, typecheck, test, audit
-├── tsconfig.json              # raiz que referencia a base compartilhada
+├── eslint.config.js           # config ESLint raiz (governa arquivos de config na raiz)
 ├── .tool-versions             # Node 24 LTS pinado (asdf)
 ├── .npmrc                     # config pnpm
 ├── .prettierrc.json           # config Prettier
@@ -97,8 +97,9 @@ specs/001-monorepo-foundation/
 **Structure Decision**: Monorepo com workspaces pnpm. Config compartilhada centralizada em
 `packages/eslint-config` (ESLint flat + tsconfig base) consumida por extensão. `packages/shared`
 é o primeiro consumidor real dessa config e valida ponta-a-ponta que um novo pacote herda strict
-+ lint sem setup adicional (US2). O grafo do Turborepo descobre pacotes automaticamente via
-`pnpm-workspace.yaml`, satisfazendo FR-010 sem edição da raiz ao adicionar pacotes.
+
+- lint sem setup adicional (US2). O grafo do Turborepo descobre pacotes automaticamente via
+  `pnpm-workspace.yaml`, satisfazendo FR-010 sem edição da raiz ao adicionar pacotes.
 
 ## Complexity Tracking
 
