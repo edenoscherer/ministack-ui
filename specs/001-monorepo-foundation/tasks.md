@@ -21,11 +21,11 @@ independente.
 
 **Purpose**: Esqueleto do workspace e toolchain pinado.
 
-- [ ] T001 Criar `.tool-versions` (Node 24 LTS) e `.npmrc` (`engine-strict=true`, `auto-install-peers=true`) na raiz
-- [ ] T002 Criar `package.json` raiz (privado): campo `packageManager` (pnpm), `engines.node`, scripts de pipeline (`build|lint|typecheck|test|audit|ci`), devDeps de tooling (turbo, eslint, prettier, husky, lint-staged, commitlint, typescript, vitest)
-- [ ] T003 Criar `pnpm-workspace.yaml` com globs `packages/*` e `apps/*`
-- [ ] T004 [P] Criar `.gitignore` cobrindo `node_modules/`, `dist/`, `.turbo/`, `*.log`, `.env*`, `coverage/`
-- [ ] T005 [P] Criar `.prettierrc.json` e `.prettierignore` na raiz
+- [x] T001 Criar `.tool-versions` (Node 24 LTS) e `.npmrc` (`engine-strict=true`, `auto-install-peers=true`) na raiz
+- [x] T002 Criar `package.json` raiz (privado): campo `packageManager` (pnpm), `engines.node`, scripts de pipeline (`build|lint|typecheck|test|audit|ci`), devDeps de tooling (turbo, eslint, prettier, husky, lint-staged, commitlint, typescript, vitest)
+- [x] T003 Criar `pnpm-workspace.yaml` com globs `packages/*` e `apps/*`
+- [x] T004 [P] Criar `.gitignore` cobrindo `node_modules/`, `dist/`, `.turbo/`, `*.log`, `.env*`, `coverage/`
+- [x] T005 [P] Criar `.prettierrc.json` e `.prettierignore` na raiz
 
 ---
 
@@ -35,11 +35,11 @@ independente.
 
 **⚠️ CRITICAL**: Nenhuma user story pode ser concluída antes desta fase.
 
-- [ ] T006 Criar `turbo.json` com tarefas `build`, `lint`, `typecheck`, `test` (cache) e `audit` (`cache: false`), com `dependsOn` conforme contracts/pipeline-tasks.md
-- [ ] T007 Criar pacote `packages/eslint-config`: `package.json` com `name` `@ministack/eslint-config` e `exports` `./base` e `./tsconfig`
-- [ ] T008 [P] Implementar `packages/eslint-config/base.js` (ESLint 9 flat: `@eslint/js` + `typescript-eslint` type-checked + `eslint-config-prettier`)
-- [ ] T009 [P] Implementar `packages/eslint-config/tsconfig.base.json` (`strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `isolatedModules`, `moduleResolution: bundler`)
-- [ ] T010 [P] Criar `packages/eslint-config/README.md` documentando os exports e o uso por extensão
+- [x] T006 Criar `turbo.json` com tarefas `build`, `lint`, `typecheck`, `test` (cache) e `audit` (`cache: false`), com `dependsOn` conforme contracts/pipeline-tasks.md
+- [x] T007 Criar pacote `packages/eslint-config`: `package.json` com `name` `@ministack/eslint-config` e `exports` `./base` e `./tsconfig`
+- [x] T008 [P] Implementar `packages/eslint-config/base.js` (ESLint 9 flat: `@eslint/js` + `typescript-eslint` type-checked + `eslint-config-prettier`)
+- [x] T009 [P] Implementar `packages/eslint-config/tsconfig.base.json` (`strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `isolatedModules`, `moduleResolution: bundler`)
+- [x] T010 [P] Criar `packages/eslint-config/README.md` documentando os exports e o uso por extensão
 
 **Checkpoint**: Config compartilhada e pipeline prontos — user stories podem começar.
 
@@ -51,9 +51,9 @@ independente.
 
 **Independent Test**: Clone limpo → `pnpm install` → `pnpm run ci` retorna exit 0.
 
-- [ ] T011 [US1] Configurar script raiz `ci` agregando `audit → build → lint → typecheck → test` no `package.json` raiz (fecha o contrato do pipeline)
-- [ ] T012 [US1] Rodar `pnpm install` e verificar que os 4 comandos (`build|lint|typecheck|test`) saem com exit 0 mesmo sem pacotes de produto (FR-005; edge case test-vazio)
-- [ ] T013 [US1] Validar descoberta automática: confirmar que o grafo do Turborepo enxerga os pacotes via globs sem edição da raiz (FR-010)
+- [x] T011 [US1] Configurar script raiz `ci` agregando `audit → build → lint → typecheck → test` no `package.json` raiz (fecha o contrato do pipeline)
+- [x] T012 [US1] Rodar `pnpm install` e verificar que os 4 comandos (`build|lint|typecheck|test`) saem com exit 0 mesmo sem pacotes de produto (FR-005; edge case test-vazio)
+- [x] T013 [US1] Validar descoberta automática: confirmar que o grafo do Turborepo enxerga os pacotes via globs sem edição da raiz (FR-010)
 
 **Checkpoint**: US1 funcional e testável de forma independente (MVP).
 
@@ -65,12 +65,12 @@ independente.
 
 **Independent Test**: Pacote que estende a base + código que viola strict/lint ⇒ `typecheck`/`lint` falham apontando o erro.
 
-- [ ] T014 [P] [US2] Criar `packages/shared/package.json` (`@ministack/shared`, `type: module`, scripts `build|lint|typecheck|test`, dep dev em `@ministack/eslint-config` via `workspace:*`)
-- [ ] T015 [P] [US2] Criar `packages/shared/tsconfig.json` estendendo `@ministack/eslint-config/tsconfig`
-- [ ] T016 [P] [US2] Criar `packages/shared/eslint.config.js` estendendo `@ministack/eslint-config/base`
-- [ ] T017 [US2] Implementar `packages/shared/src/types.ts` e `packages/shared/src/index.ts` (barrel) com tipos base, sem efeitos colaterais (FR-003, Princípio II)
-- [ ] T018 [US2] Verificar herança da config: introduzir temporariamente `any` implícito ⇒ `turbo run typecheck` falha; introduzir violação de lint ⇒ `turbo run lint` falha; reverter (Acceptance US2 #1, #2, SC-004)
-- [ ] T019 [US2] Verificar resolução `workspace:*` de `@ministack/shared` a partir de outro pacote sem build manual (Acceptance US2 #3)
+- [x] T014 [P] [US2] Criar `packages/shared/package.json` (`@ministack/shared`, `type: module`, scripts `build|lint|typecheck|test`, dep dev em `@ministack/eslint-config` via `workspace:*`)
+- [x] T015 [P] [US2] Criar `packages/shared/tsconfig.json` estendendo `@ministack/eslint-config/tsconfig`
+- [x] T016 [P] [US2] Criar `packages/shared/eslint.config.js` estendendo `@ministack/eslint-config/base`
+- [x] T017 [US2] Implementar `packages/shared/src/types.ts` e `packages/shared/src/index.ts` (barrel) com tipos base, sem efeitos colaterais (FR-003, Princípio II)
+- [x] T018 [US2] Verificar herança da config: introduzir temporariamente `any` implícito ⇒ `turbo run typecheck` falha; introduzir violação de lint ⇒ `turbo run lint` falha; reverter (Acceptance US2 #1, #2, SC-004)
+- [x] T019 [US2] Verificar resolução `workspace:*` de `@ministack/shared` a partir de outro pacote sem build manual (Acceptance US2 #3)
 
 **Checkpoint**: US1 e US2 funcionam de forma independente.
 
@@ -82,21 +82,21 @@ independente.
 
 **Independent Test**: Commit com lint quebrado e mensagem inválida são rejeitados localmente.
 
-- [ ] T020 [US3] Adicionar script `prepare` (husky) ao `package.json` raiz para instalar hooks no `pnpm install` (FR-006)
-- [ ] T021 [P] [US3] Criar `.husky/pre-commit` executando `pnpm exec lint-staged`
-- [ ] T022 [P] [US3] Criar `.husky/commit-msg` executando `pnpm exec commitlint --edit "$1"`
-- [ ] T023 [P] [US3] Criar `commitlint.config.js` estendendo `@commitlint/config-conventional`
-- [ ] T024 [P] [US3] Adicionar bloco `lint-staged` (ESLint `--fix` + Prettier nos arquivos staged) ao `package.json` raiz
-- [ ] T025 [US3] Verificar hooks: mensagem `"fix stuff"` rejeitada; `"feat: ..."` aceita; staged com lint autofixável corrigido (Acceptance US3 #1, #2, #3; edge case sem staged = no-op)
+- [x] T020 [US3] Adicionar script `prepare` (husky) ao `package.json` raiz para instalar hooks no `pnpm install` (FR-006)
+- [x] T021 [P] [US3] Criar `.husky/pre-commit` executando `pnpm exec lint-staged`
+- [x] T022 [P] [US3] Criar `.husky/commit-msg` executando `pnpm exec commitlint --edit "$1"`
+- [x] T023 [P] [US3] Criar `commitlint.config.js` estendendo `@commitlint/config-conventional`
+- [x] T024 [P] [US3] Adicionar bloco `lint-staged` (ESLint `--fix` + Prettier nos arquivos staged) ao `package.json` raiz
+- [x] T025 [US3] Verificar hooks: mensagem `"fix stuff"` rejeitada; `"feat: ..."` aceita; staged com lint autofixável corrigido (Acceptance US3 #1, #2, #3; edge case sem staged = no-op)
 
 ---
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T026 [P] Implementar `packages/shared/src/index.test.ts` (Vitest smoke test) e `packages/shared/vitest.config.ts` — prova que `turbo run test` é verde (D8)
-- [ ] T027 Configurar tarefa/atalho `audit` (`pnpm audit --audit-level=high`) e `pnpm.auditConfig.ignoreCves` (allowlist rastreável) no `package.json` raiz (FR-011, SC-006, edge case vuln-sem-fix)
-- [ ] T028 Medir performance do pipeline: cache frio < 3 min e cache quente < 30 s (SC-005); registrar no PR
-- [ ] T029 [P] Rodar `pnpm run ci` completo e a validação do quickstart.md ponta-a-ponta (SC-001, SC-002)
+- [x] T026 [P] Implementar `packages/shared/src/index.test.ts` (Vitest smoke test) e `packages/shared/vitest.config.ts` — prova que `turbo run test` é verde (D8)
+- [x] T027 Configurar tarefa/atalho `audit` (`pnpm audit --audit-level=high`) e `pnpm.auditConfig.ignoreCves` (allowlist rastreável) no `package.json` raiz (FR-011, SC-006, edge case vuln-sem-fix)
+- [x] T028 Medir performance do pipeline: cache frio < 3 min e cache quente < 30 s (SC-005); registrar no PR
+- [x] T029 [P] Rodar `pnpm run ci` completo e a validação do quickstart.md ponta-a-ponta (SC-001, SC-002)
 
 ---
 
