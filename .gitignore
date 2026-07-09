@@ -9,3 +9,12 @@ lerna-debug.log*
 
 node_modules
 dist
+
+# Build/tool caches
+.turbo
+coverage
+
+# Environment
+.env
+.env.*
+!.env.example

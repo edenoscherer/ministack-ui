@@ -1,0 +1,19 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+# Approve native post-install builds explicitly (esbuild is a Vitest dependency).
+allowBuilds:
+  esbuild: true
+
+# Force a patched transitive `vite` (GHSA-fx2h-pf6j-xcff, high). Vitest 3.x accepts
+# vite ^6; pnpm otherwise resolves vite 5.x, which is vulnerable. Remove once vitest
+# pins a patched vite by default.
+overrides:
+  vite: '^6.4.3'
+
+# Dependency-audit exception allowlist (FR-011 / spec edge case).
+# Add a CVE id here ONLY for a critical/high vulnerability with no upstream fix,
+# always with a one-line justification comment. Never silence audit globally.
+auditConfig:
+  ignoreCves: []

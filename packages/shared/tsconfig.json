@@ -1,0 +1,7 @@
+{
+  "extends": "@ministack/eslint-config/tsconfig",
+  "compilerOptions": {
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}
