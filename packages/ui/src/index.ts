@@ -18,3 +18,6 @@ export { StatusBadge } from './components/StatusBadge';
 export type { ServiceStatus } from './components/StatusBadge';
 export { ServiceIcon } from './components/ServiceIcon';
 export type { ServiceType } from './components/ServiceIcon';
+
+export { LogGroupsTable } from './components/LogGroupsTable';
+export type { LogGroupsTableProps } from './components/LogGroupsTable';

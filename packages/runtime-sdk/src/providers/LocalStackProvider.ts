@@ -1,5 +1,32 @@
-import type { RuntimeProvider } from '../types';
+import type { RuntimeProvider, LogGroupMetadata } from '../types';
 import { streamMockLogs } from './mockHelper';
+
+let localStackLogGroupsStore: LogGroupMetadata[] = [
+  {
+    name: '/aws/lambda/localstack-s3-trigger',
+    retentionDays: 7,
+    storedBytes: 512000,
+    createdAt: '2026-03-10T00:00:00Z',
+  },
+  {
+    name: '/aws/lambda/localstack-sqs-consumer',
+    retentionDays: 7,
+    storedBytes: 204800,
+    createdAt: '2026-03-10T00:00:00Z',
+  },
+  {
+    name: '/aws/rds/localstack-db',
+    retentionDays: 30,
+    storedBytes: 3145728,
+    createdAt: '2026-03-15T00:00:00Z',
+  },
+  {
+    name: '/aws/ecs/localstack-web-container',
+    retentionDays: null,
+    storedBytes: 921600,
+    createdAt: '2026-04-01T00:00:00Z',
+  },
+];
 
 export class LocalStackProvider implements RuntimeProvider {
   async logs(): Promise<void> {
@@ -19,12 +46,7 @@ export class LocalStackProvider implements RuntimeProvider {
   }
 
   async getLogGroups(): Promise<string[]> {
-    return [
-      '/aws/lambda/localstack-s3-trigger',
-      '/aws/lambda/localstack-sqs-consumer',
-      '/aws/rds/localstack-db',
-      '/aws/ecs/localstack-web-container',
-    ];
+    return localStackLogGroupsStore.map((g) => g.name);
   }
 
   async getLogStreams(logGroup: string): Promise<string[]> {
@@ -35,6 +57,25 @@ export class LocalStackProvider implements RuntimeProvider {
       '/aws/ecs/localstack-web-container': ['ecs-container-instance-1'],
     };
     return groups[logGroup] || [];
+  }
+
+  async getLogGroupsWithMetadata(): Promise<LogGroupMetadata[]> {
+    return [...localStackLogGroupsStore];
+  }
+
+  async createLogGroup(name: string, retentionDays?: number | null): Promise<LogGroupMetadata> {
+    const group: LogGroupMetadata = {
+      name,
+      retentionDays: retentionDays ?? null,
+      storedBytes: 0,
+      createdAt: new Date().toISOString(),
+    };
+    localStackLogGroupsStore = [...localStackLogGroupsStore, group];
+    return group;
+  }
+
+  async deleteLogGroup(name: string): Promise<void> {
+    localStackLogGroupsStore = localStackLogGroupsStore.filter((g) => g.name !== name);
   }
 
   async streamLogs(

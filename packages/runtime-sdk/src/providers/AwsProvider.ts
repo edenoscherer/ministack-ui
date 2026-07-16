@@ -1,4 +1,4 @@
-import type { RuntimeProvider } from '../types';
+import type { RuntimeProvider, LogGroupMetadata } from '../types';
 
 export class AwsProvider implements RuntimeProvider {
   async logs(): Promise<void> {
@@ -29,7 +29,18 @@ export class AwsProvider implements RuntimeProvider {
     onLog: (log: string) => void,
     filter?: { logGroup?: string; logStream?: string },
   ): Promise<() => void> {
-    // Retorna uma função de desinscrição vazia, a integração com a AWS real será em sprint posterior.
     return () => {};
+  }
+
+  async getLogGroupsWithMetadata(): Promise<LogGroupMetadata[]> {
+    return [];
+  }
+
+  async createLogGroup(name: string, retentionDays?: number | null): Promise<LogGroupMetadata> {
+    throw new Error('not implemented');
+  }
+
+  async deleteLogGroup(name: string): Promise<void> {
+    throw new Error('not implemented');
   }
 }

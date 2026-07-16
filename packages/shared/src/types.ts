@@ -25,3 +25,10 @@ export interface LogMessage {
 }
 
 export type ConnectionStatus = 'CONNECTING' | 'CONNECTED' | 'DISCONNECTED';
+
+export interface LogGroupMetadata {
+  name: string;
+  retentionDays: number | null;
+  storedBytes: number;
+  createdAt: string;
+}
