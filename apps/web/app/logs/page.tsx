@@ -1,12 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { LogViewer } from '@ministack-ui/ui';
 import { useLogStream } from '../../hooks/useLogStream';
 import { useLogStore } from '../../store/useLogStore';
 
 export default function LogsPage() {
+  return (
+    <Suspense fallback={<div className="h-screen w-screen bg-zinc-950" />}>
+      <LogsPageContent />
+    </Suspense>
+  );
+}
+
+function LogsPageContent() {
   const searchParams = useSearchParams();
   const [provider, setProvider] = useState<'ministack' | 'localstack'>('ministack');
 
