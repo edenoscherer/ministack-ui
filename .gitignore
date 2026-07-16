@@ -3,6 +3,11 @@ node_modules/
 .pnp
 .pnp.js
 
+# Package manager: this project uses pnpm exclusively (see packageManager in package.json)
+bun.lock
+yarn.lock
+package-lock.json
+
 # Build outputs
 dist/
 build/
